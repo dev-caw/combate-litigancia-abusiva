@@ -36,26 +36,28 @@
 <body class="bg-gray-100">
     <div id="root"></div>
 
-    <script type="text/babel">
-        // --- INICIALIZAÇÃO DO FIREBASE ---
-        // IMPORTANTE: Substitua com as configurações do seu projeto Firebase.
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-        
-        let app;
-        try {
-            app = firebase.app();
-        } catch (e) {
-            app = firebase.initializeApp(firebaseConfig);
-        }
-        const auth = firebase.auth();
-        const googleProvider = new firebase.auth.GoogleAuthProvider();
+    <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyCdgi94wyHts70QES3wJ5TqYfM3CkjKyGA",
+    authDomain: "caw-combate-litigancia-abusiva.firebaseapp.com",
+    projectId: "caw-combate-litigancia-abusiva",
+    storageBucket: "caw-combate-litigancia-abusiva.firebasestorage.app",
+    messagingSenderId: "486284516738",
+    appId: "1:486284516738:web:f93e70333563fadb62839b",
+    measurementId: "G-70MZCTBNKG"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
 
         // --- Ícones (SVGs) ---
         const LockClosedIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" /></svg> );
@@ -136,7 +138,7 @@
                 return <AuthPage />;
             }
 
-            if (user && !user.emailVerified) {
+            if (user && !user.emailVerified && user.providerData.some(p => p.providerId === 'password')) {
                 return <EmailVerificationPage user={user} onLogout={handleLogout} />;
             }
             
@@ -146,17 +148,33 @@
         // --- COMPONENTES DE AUTENTICAÇÃO ---
         const AuthPage = () => {
             const [isLoginView, setIsLoginView] = React.useState(true);
+            const [authAction, setAuthAction] = React.useState('login'); // 'login', 'register', 'reset'
+
+            const renderForm = () => {
+                switch(authAction) {
+                    case 'login':
+                        return <LoginForm onResetPassword={() => setAuthAction('reset')} />;
+                    case 'register':
+                        return <RegisterForm onSwitchToLogin={() => setAuthAction('login')} />;
+                    case 'reset':
+                        return <ResetPasswordForm onSwitchToLogin={() => setAuthAction('login')} />;
+                    default:
+                        return <LoginForm onResetPassword={() => setAuthAction('reset')} />;
+                }
+            }
 
             return (
                 <div className="flex items-center justify-center min-h-screen bg-gray-100 font-sans">
                     <div className="w-full max-w-md p-4 md:p-8 space-y-6 bg-white rounded-lg shadow-xl">
                         <div className="text-center"><img src="https://dev-caw.github.io/combate-litigancia-abusiva/img/topo.png" alt="Logotipo CAW" /></div>
-                        {isLoginView ? <LoginForm /> : <RegisterForm />}
-                        <div className="text-center text-sm">
-                            <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500" onClick={() => setIsLoginView(!isLoginView)}>
-                                {isLoginView ? "Não tem uma conta? Cadastre-se" : "Já tem uma conta? Faça o login"}
-                            </a>
-                        </div>
+                        {renderForm()}
+                        {authAction !== 'reset' && (
+                             <div className="text-center text-sm">
+                                <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500" onClick={() => setAuthAction(authAction === 'login' ? 'register' : 'login')}>
+                                    {authAction === 'login' ? "Não tem uma conta? Cadastre-se" : "Já tem uma conta? Faça o login"}
+                                </a>
+                            </div>
+                        )}
                     </div>
                 </div>
             );
@@ -168,7 +186,7 @@
             const handleResendVerification = () => {
                 user.sendEmailVerification()
                     .then(() => setMessage('Um novo e-mail de verificação foi enviado.'))
-                    .catch(error => setMessage(`Erro: ${error.message}`));
+                    .catch(error => setMessage(`Erro: ${translateFirebaseAuthError(error.code)}`));
             };
             
             return (
@@ -179,13 +197,16 @@
                             Um link de verificação foi enviado para <strong>{user.email}</strong>. Por favor, clique no link para ativar sua conta.
                         </p>
                         <p className="text-gray-500 text-sm">
-                           Se não encontrar o e-mail, verifique sua pasta de spam.
+                           Se não encontrar o e-mail, verifique sua pasta de spam. Você precisa verificar seu e-mail para continuar.
                         </p>
                         <button onClick={handleResendVerification} className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
                             Reenviar E-mail de Verificação
                         </button>
                         {message && <p className="text-green-600 text-sm mt-2">{message}</p>}
-                        <button onClick={onLogout} className="mt-4 text-sm text-gray-500 hover:text-gray-700">
+                         <button onClick={() => window.location.reload()} className="mt-4 w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            Já verifiquei. Continuar.
+                        </button>
+                        <button onClick={onLogout} className="mt-2 text-sm text-gray-500 hover:text-gray-700">
                             Sair
                         </button>
                     </div>
@@ -201,11 +222,15 @@
                 case 'auth/wrong-password': return 'Senha incorreta. Tente novamente.';
                 case 'auth/email-already-in-use': return 'Este e-mail já está em uso por outra conta.';
                 case 'auth/weak-password': return 'A senha é muito fraca. Use pelo menos 6 caracteres.';
-                default: return 'Ocorreu um erro. Por favor, tente novamente.';
+                case 'auth/popup-closed-by-user': return 'A janela de login foi fechada antes da conclusão. Tente novamente.';
+                case 'auth/popup-blocked': return 'A janela de login foi bloqueada pelo navegador. Por favor, permita pop-ups para este site.';
+                case 'auth/operation-not-allowed': return 'O login com Google não está habilitado. Verifique as configurações do Firebase.';
+                case 'auth/unauthorized-domain': return 'Este domínio não está autorizado para operações de login. Verifique as configurações do Firebase.';
+                default: return `Ocorreu um erro inesperado (${code}). Por favor, tente novamente.`;
             }
         };
 
-        const LoginForm = () => {
+        const LoginForm = ({ onResetPassword }) => {
             const [email, setEmail] = React.useState('');
             const [password, setPassword] = React.useState('');
             const [error, setError] = React.useState('');
@@ -234,6 +259,7 @@
                 <form className="mt-8 space-y-6" onSubmit={handleLogin}>
                     <input type="email" required className="appearance-none rounded-md relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Endereço de e-mail" value={email} onChange={(e) => setEmail(e.target.value)} />
                     <input type="password" required className="appearance-none rounded-md relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Senha" value={password} onChange={(e) => setPassword(e.target.value)} />
+                    <div className="text-right text-sm"> <a href="#" onClick={(e) => { e.preventDefault(); onResetPassword(); }} className="font-medium text-indigo-600 hover:text-indigo-500"> Esqueceu sua senha? </a> </div>
                     {error && <p className="text-red-500 text-xs text-center">{error}</p>}
                     <button type="submit" disabled={loading} className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400">
                         {loading ? 'Entrando...' : 'Entrar'}
@@ -246,7 +272,7 @@
             );
         };
         
-        const RegisterForm = () => {
+        const RegisterForm = ({ onSwitchToLogin }) => {
             const [email, setEmail] = React.useState('');
             const [password, setPassword] = React.useState('');
             const [confirmPassword, setConfirmPassword] = React.useState('');
@@ -274,13 +300,17 @@
             };
 
             if (success) {
-                return <div className="text-center text-green-700 bg-green-50 p-4 rounded-md">Cadastro realizado com sucesso! Um e-mail de verificação foi enviado para {email}. Por favor, verifique sua caixa de entrada.</div>
+                return <div className="text-center text-green-700 bg-green-50 p-4 rounded-md">
+                    <h3 className="font-bold">Cadastro realizado com sucesso!</h3>
+                    <p className="text-sm mt-2">Um e-mail de verificação foi enviado para <strong>{email}</strong>. Por favor, verifique sua caixa de entrada e clique no link para ativar sua conta.</p>
+                     <button onClick={onSwitchToLogin} className="mt-4 text-sm font-medium text-indigo-600 hover:text-indigo-500">Voltar para o Login</button>
+                </div>
             }
 
             return (
                  <form className="mt-8 space-y-4" onSubmit={handleRegister}>
                     <input type="email" required className="appearance-none rounded-md relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Seu melhor e-mail" value={email} onChange={(e) => setEmail(e.target.value)} />
-                    <input type="password" required className="appearance-none rounded-md relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Crie uma senha" value={password} onChange={(e) => setPassword(e.target.value)} />
+                    <input type="password" required className="appearance-none rounded-md relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Crie uma senha (mín. 6 caracteres)" value={password} onChange={(e) => setPassword(e.target.value)} />
                     <input type="password" required className="appearance-none rounded-md relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Confirme sua senha" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
                     {error && <p className="text-red-500 text-xs text-center">{error}</p>}
                     <button type="submit" disabled={loading} className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400">
@@ -289,6 +319,52 @@
                 </form>
             );
         };
+
+        const ResetPasswordForm = ({ onSwitchToLogin }) => {
+            const [email, setEmail] = React.useState('');
+            const [error, setError] = React.useState('');
+            const [loading, setLoading] = React.useState(false);
+            const [success, setSuccess] = React.useState(false);
+
+            const handleReset = (e) => {
+                e.preventDefault();
+                setError('');
+                setLoading(true);
+                auth.sendPasswordResetEmail(email)
+                    .then(() => {
+                        setSuccess(true);
+                    })
+                    .catch(err => {
+                        setError(translateFirebaseAuthError(err.code));
+                    })
+                    .finally(() => setLoading(false));
+            };
+
+            if (success) {
+                 return <div className="text-center text-green-700 bg-green-50 p-4 rounded-md">
+                    <h3 className="font-bold">E-mail enviado!</h3>
+                    <p className="text-sm mt-2">Se houver uma conta associada a <strong>{email}</strong>, você receberá um link para redefinir sua senha.</p>
+                    <button onClick={onSwitchToLogin} className="mt-4 text-sm font-medium text-indigo-600 hover:text-indigo-500">Voltar para o Login</button>
+                </div>
+            }
+
+            return (
+                 <form className="mt-8 space-y-4" onSubmit={handleReset}>
+                     <h3 className="text-center text-xl font-semibold text-gray-800">Redefinir Senha</h3>
+                    <p className="text-center text-sm text-gray-600">Insira seu e-mail para receber um link de redefinição de senha.</p>
+                    <input type="email" required className="appearance-none rounded-md relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Endereço de e-mail" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    {error && <p className="text-red-500 text-xs text-center">{error}</p>}
+                    <button type="submit" disabled={loading} className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400">
+                        {loading ? 'Enviando...' : 'Enviar Link de Redefinição'}
+                    </button>
+                    <div className="text-center text-sm">
+                        <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500" onClick={(e) => { e.preventDefault(); onSwitchToLogin(); }}>
+                            Voltar para o Login
+                        </a>
+                    </div>
+                </form>
+            )
+        }
 
 
         // --- ESTRUTURA PRINCIPAL ---
