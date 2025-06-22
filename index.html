@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+d<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -43,7 +43,7 @@
           VerificaçãoDeDocumentos: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
           AutomaçãoDaDefesa: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 011-1h1a2 2 0 100-4H7a1 1 0 01-1-1V6a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg>,
           GestãoDeRiscos: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-          ConsultaDoAdverso: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
+          SituaçãoDoAdverso: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
           ResoluçãoDeDisputas: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
         };
 
@@ -55,7 +55,7 @@
           { id: 'VerificaçãoDeDocumentos', name: 'Verificação de Documentos', icon: moduleIcons.VerificaçãoDeDocumentos },
           { id: 'AutomaçãoDaDefesa', name: 'Automação da Defesa', icon: moduleIcons.AutomaçãoDaDefesa },
           { id: 'GestãoDeRiscos', name: 'Gestão de Riscos', icon: moduleIcons.GestãoDeRiscos },
-          { id: 'ConsultaDoAdverso', name: 'Consulta do Adverso', icon: moduleIcons.ConsultaDoAdverso },
+          { id: 'SituaçãoDoAdverso', name: 'Consulta do Adverso', icon: moduleIcons.SituaçãoDoAdverso },
           { id: 'ResoluçãoDeDisputas', name: 'Resolução de Disputas', icon: moduleIcons.ResoluçãoDeDisputas },
         ];
 
@@ -264,7 +264,7 @@
         const AutomacaoDaDefesaModule = () => { /* ... (código mantido) ... */ };
         const RiskMatrix = ({ risks }) => { /* ... (código mantido) ... */ };
         const GestaoDeRiscosModule = () => { /* ... (código mantido) ... */ };
-        const ConsultaDoAdversoModule = () => { /* ... (código mantido) ... */ };
+        const SituacaoDoAdversoModule = () => { /* ... (código mantido) ... */ };
         const GenericModulePage = ({ moduleName }) => ( <div> <h2 className="text-3xl font-semibold text-gray-800 mb-6">{moduleName}</h2> <div className="bg-white p-8 rounded-lg shadow-md text-center"> <p className="text-gray-600">O conteúdo para o módulo <span className="font-semibold text-indigo-600">{moduleName}</span> será implementado aqui.</p> </div> </div> );
 
         const MainLayout = ({ onLogout }) => {
@@ -289,7 +289,7 @@
               case 'VerificaçãoDeDocumentos': return <VerificacaoDeDocumentosModule />;
               case 'AutomaçãoDaDefesa': return <AutomacaoDaDefesaModule />;
               case 'GestãoDeRiscos': return <GestaoDeRiscosModule />;
-              case 'ConsultaDoAdverso': return <ConsultaDoAdversoModule />;
+              case 'SituaçãoDoAdverso': return <SituacaoDoAdversoModule />;
               default: return <GenericModulePage moduleName={module?.name || "Módulo"} />;
             }
           };
