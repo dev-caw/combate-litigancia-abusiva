@@ -129,7 +129,6 @@
         const Dashboard = ({ onSelectModule }) => (
           <div>
             <h2 className="text-3xl font-semibold text-gray-800 mb-6">Dashboard</h2>
-            <img src="https://dev-caw.github.io/combate-litigancia-abusiva/img/pcla-banner.png" width="100%" />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {modules.filter(m => m.id !== 'Dashboard').map((module) => (
                 <div key={module.id} className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer flex flex-col items-center text-center" onClick={() => onSelectModule(module.id)}>
