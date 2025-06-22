@@ -36,28 +36,27 @@
 <body class="bg-gray-100">
     <div id="root"></div>
 
-    <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyCdgi94wyHts70QES3wJ5TqYfM3CkjKyGA",
-    authDomain: "caw-combate-litigancia-abusiva.firebaseapp.com",
-    projectId: "caw-combate-litigancia-abusiva",
-    storageBucket: "caw-combate-litigancia-abusiva.firebasestorage.app",
-    messagingSenderId: "486284516738",
-    appId: "1:486284516738:web:f93e70333563fadb62839b",
-    measurementId: "G-70MZCTBNKG"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
+    <script type="text/babel">
+        // --- INICIALIZAÇÃO DO FIREBASE ---
+        // IMPORTANTE: Substitua com as configurações do seu projeto Firebase.
+        const firebaseConfig = {
+  apiKey: "AIzaSyCdgi94wyHts70QES3wJ5TqYfM3CkjKyGA",
+  authDomain: "caw-combate-litigancia-abusiva.firebaseapp.com",
+  projectId: "caw-combate-litigancia-abusiva",
+  storageBucket: "caw-combate-litigancia-abusiva.firebasestorage.app",
+  messagingSenderId: "486284516738",
+  appId: "1:486284516738:web:f93e70333563fadb62839b",
+  measurementId: "G-70MZCTBNKG"
+};
+        
+        let app;
+        try {
+            app = firebase.app();
+        } catch (e) {
+            app = firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+        const googleProvider = new firebase.auth.GoogleAuthProvider();
 
         // --- Ícones (SVGs) ---
         const LockClosedIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" /></svg> );
