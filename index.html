@@ -8,6 +8,9 @@
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Bibliotecas para PDF e Mapa -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -15,6 +18,8 @@
             -moz-osx-font-smoothing: grayscale;
         }
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        .gemini-response p, .gemini-response ul { margin-bottom: 0.75rem; }
+        .gemini-response h3 { font-size: 1.25rem; font-weight: 600; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; margin-top: 1.5rem; margin-bottom: 1rem;}
     </style>
 </head>
 <body class="bg-gray-100">
@@ -32,296 +37,909 @@
         const UploadIcon = () => ( <svg className="w-8 h-8" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M16.88 9.1A4 4 0 0 1 16 17H5a5 5 0 0 1-1-9.9V7a3 3 0 0 1 4.52-2.59A4.98 4.98 0 0 1 17 8c0 .38-.04.74-.12 1.1zM11 11h3l-4 4-4-4h3V3h2v8z" /></svg> );
         const LocationMarkerIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> );
         const ChevronDownIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg> );
-        const ExternalLinkIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg> );
+        const ChevronUpIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>);
+        const ExternalLinkIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg> );
+        const DownloadIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg> );
 
         // --- Estrutura de Ícones e Módulos ---
         const moduleIcons = {
-          Dashboard: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
-          Overview: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
-          AnáliseDeDados: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
-          DetecçãoDeFraudes: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>,
-          VerificaçãoDeDocs: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
-          AutomaçãoDaDefesa: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 011-1h1a2 2 0 100-4H7a1 1 0 01-1-1V6a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg>,
-          GestãoDeRiscos: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-          SituaçãoDoAdverso: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
-          ResoluçãoDeDisputas: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
+            Dashboard: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
+            Overview: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
+            AnáliseDeDados: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
+            DetecçãoDeFraudes: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>,
+            VerificaçãoDeDocs: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
+            AutomaçãoDaDefesa: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 011-1h1a2 2 0 100-4H7a1 1 0 01-1-1V6a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg>,
+            GestãoDeRiscos: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+            SituaçãoDoAdverso: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
+            CentralDeRelatorios: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-4m3 4v-2m3 2v-6M5 21h14a2 2 0 002-2V7l-4-4H5a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>,
         };
 
         const modules = [
-          { id: 'Dashboard', name: 'Dashboard', icon: moduleIcons.Dashboard },
-          { id: 'Overview', name: 'Overview', icon: moduleIcons.Overview },
-          { id: 'AnáliseDeDados', name: 'Análise de Dados e IA', icon: moduleIcons.AnáliseDeDados },
-          { id: 'DetecçãoDeFraudes', name: 'Detecção de Fraudes', icon: moduleIcons.DetecçãoDeFraudes },
-          { id: 'VerificaçãoDeDocs', name: 'Verificação de Docs', icon: moduleIcons.VerificaçãoDeDocs },
-          { id: 'AutomaçãoDaDefesa', name: 'Automação da Defesa', icon: moduleIcons.AutomaçãoDaDefesa },
-          { id: 'GestãoDeRiscos', name: 'Gestão de Riscos', icon: moduleIcons.GestãoDeRiscos },
-          { id: 'SituaçãoDoAdverso', name: 'Consulta do Adverso', icon: moduleIcons.SituaçãoDoAdverso },
-          { id: 'ResoluçãoDeDisputas', name: 'Resolução de Disputas', icon: moduleIcons.ResoluçãoDeDisputas },
+            { id: 'Dashboard', name: 'Dashboard', icon: moduleIcons.Dashboard },
+            { id: 'Overview', name: 'Overview', icon: moduleIcons.Overview },
+            { id: 'AnáliseDeDados', name: 'Análise de Dados e IA', icon: moduleIcons.AnáliseDeDados },
+            { id: 'DetecçãoDeFraudes', name: 'Detecção de Fraudes', icon: moduleIcons.DetecçãoDeFraudes },
+            { id: 'VerificaçãoDeDocs', name: 'Verificação de Docs', icon: moduleIcons.VerificaçãoDeDocs },
+            { id: 'AutomaçãoDaDefesa', name: 'Automação da Defesa', icon: moduleIcons.AutomaçãoDaDefesa },
+            { id: 'GestãoDeRiscos', name: 'Gestão de Riscos', icon: moduleIcons.GestãoDeRiscos },
+            { id: 'SituaçãoDoAdverso', name: 'Consulta do Adverso', icon: moduleIcons.SituaçãoDoAdverso },
+            { id: 'CentralDeRelatorios', name: 'Central de Relatórios', icon: moduleIcons.CentralDeRelatorios },
         ];
 
+        // --- Dados Mock ---
         const mockCasesData = [ { id: 1, caseNumber: "0000245-50.2024.2.00.0501", parties: { plaintiff: "GRUPO CASAS BAHIA S.A.", defendant: "Diversos Advogados" }, subject: "Pedido de Providências", status: "Em Análise na Corregedoria", riskLevel: "Alto", value: 1000.00, details: { summary: "Pedido de Providências para apurar a prática de litigância predatória por diversos advogados, com base na Recomendação 159/2024 do CNJ.", indicators: ["Causas de pedir idênticas mesmo em relações de trabalho distintas.","Prática de assédio processual.","Cooptação de clientela e de testemunhas.","Concentração de grande volume de demandas (2.124 processos) sob patrocínio de poucos profissionais."], documents: ["Decisão Corregedoria (Id. 5366780)", "Recomendação CNJ 159/2024"]}}, { id: 2, caseNumber: "0100771-66.2022.5.01.0226", parties: { plaintiff: "Reclamante Individual", defendant: "VIA VAREJO S.A." }, subject: "Reclamação Trabalhista", status: "Extinto sem Res. de Mérito", riskLevel: "Crítico", value: 45000.00, details: { summary: "Ação julgada como demanda predatória pela 6ª Vara do Trabalho de Nova Iguaçu, resultando na extinção do processo por falta de interesse de agir.", indicators: ["Identidade de objeto de pedir e volume de ações.","Padronização de pedidos e alegações genéricas.","Causas de pedir não refletem a realidade do contrato de trabalho.","Inspeções judiciais comprovaram a regularidade do ponto eletrônico da empresa, contradizendo as alegações."], documents: ["Sentença 6ª VT NI (Id. 5332454)"]}}, { id: 3, caseNumber: "1046543-64.2025.8.26.0100", parties: { plaintiff: "Goes Engenharia Ltda", defendant: "Sul América Serviços de Saúde S/A" }, subject: "Reajuste Contratual Abusivo", status: "Em Andamento", riskLevel: "Médio", value: 208901.88, details: { summary: "Ação cominatória para suspender reajustes por sinistralidade aplicados de 2016 a 2025 e pedir restituição de valores pagos.", indicators: ["Questionamento de reajustes retroativos (últimos 10 anos), o que pode indicar falta de urgência.","Patrocínio por escritório com alto volume de ações similares contra a mesma operadora (Vilhena Silva).","Ausência de prova pré-constituída de irregularidade, segundo decisão inicial."], documents: ["Contestação Sul América", "Parecer Jurídico sobre Saúde Suplementar"]}}, { id: 4, caseNumber: "1057186-81.2025.8.26.0100", parties: { plaintiff: "Paciente", defendant: "Sul América Companhia de Seguro Saúde" }, subject: "Negativa de Cobertura (TAVI)", status: "Liminar Deferida", riskLevel: "Baixo", value: 350000.00, details: { summary: "Ação para garantir cobertura de procedimento TAVI negado pela operadora. Tutela de urgência deferida com base na gravidade do quadro clínico.", indicators: ["Demanda baseada em necessidade médica urgente e comprovada por relatório.","Tema com jurisprudência variável (rol da ANS exemplificativo vs. taxativo)."], documents: ["Relatório Médico", "Decisão de Tutela de Urgência"]}}, ];
         const cnjIndicators = [ { id: 'g', title: "Ações com Petições Genéricas", description: "Distribuição de ações semelhantes com petições genéricas, mascarando a realidade dos fatos.", cpc: "art. 80, II e V, CPC" }, { id: 'l', title: "Concentração de Demandas", description: "Concentração de grande volume de demandas em poucos profissionais, sem coincidência com a sede de atuação ou domicílio das partes.", cpc: "art. 80, III e V, CPC" }, { id: 'm', title: "Assédio Processual", description: "Ajuizamento de ações com o objetivo de dificultar os direitos da parte contrária.", cpc: "art. 80, III e V, CPC" }, { id: 'd', title: "Foro Inadequado (Forum Shopping)", description: "Ajuizamento de ações em comarcas distantes do domicílio das partes ou do local do fato sem justificativa.", cpc: "art. 80, III e V, CPC" }, { id: 'k', title: "Ação sem Documentos Essenciais", description: "Ajuizamento de ações sem documentos essenciais, tornando a pretensão contrária a fato incontroverso.", cpc: "art. 80, I, V e VI, CPC" } ];
-
         const riskAnalysisData = {
-            "1": { risks: [ { type: "Risco Reputacional", probability: "Alta", impact: "Alto", description: "A alegação de litigância predatória em larga escala pode gerar publicidade negativa, afetando a imagem da empresa perante o mercado e o judiciário.", mitigation: "Elaborar uma estratégia de comunicação proativa. Publicar notas de esclarecimento e fortalecer a imagem da empresa como cumpridora de suas obrigações." }, { type: "Risco Processual", probability: "Média", impact: "Alto", description: "Risco de a Corregedoria acatar o pedido e suspender a tramitação de mais de 2.000 processos, impactando a gestão de passivos e o andamento processual.", mitigation: "Atuar ativamente no Pedido de Providências, apresentando contra-argumentos sólidos e demonstrando a legitimidade das defesas nos casos individuais." } ] },
-            "2": { risks: [ { type: "Risco Financeiro", probability: "Baixa", impact: "Baixo", description: "O processo foi extinto, minimizando o risco financeiro direto. No entanto, o custo da defesa já foi incorrido.", mitigation: "Analisar a viabilidade de ação de regresso para reaver custos, se aplicável. Utilizar a decisão como precedente em casos futuros." }, { type: "Risco de Precedente", probability: "Positivo", impact: "Alto", description: "A decisão de extinção por litigância predatória cria um precedente favorável extremamente valioso para ser usado em outras ações com o mesmo padrão.", mitigation: "Catalogar e disseminar a decisão para toda a equipe jurídica. Utilizar como jurisprudência central em contestações de casos similares." } ] },
-            "3": { risks: [ { type: "Risco Financeiro", probability: "Média", impact: "Alto", description: "Caso a tese de afastamento dos reajustes seja acatada, o impacto financeiro será significativo, incluindo a restituição de valores e a redução da receita futura do contrato.", mitigation: "Preparar uma defesa técnica robusta, com perícia atuarial demonstrando a necessidade e correção dos reajustes com base na sinistralidade. Argumentar a legalidade das cláusulas contratuais." }, ] }
+            "1": { risks: [ { type: "Reputacional", probability: "Alta", impact: "Alto", description: "A alegação de litigância predatória em larga escala pode gerar publicidade negativa, afetando a imagem da empresa perante o mercado e o judiciário.", mitigation: "Elaborar uma estratégia de comunicação proativa. Publicar notas de esclarecimento e fortalecer a imagem da empresa como cumpridora de suas obrigações." }, { type: "Processual", probability: "Média", impact: "Alto", description: "Risco de a Corregedoria acatar o pedido e suspender a tramitação de mais de 2.000 processos, impactando a gestão de passivos e o andamento processual.", mitigation: "Atuar ativamente no Pedido de Providências, apresentando contra-argumentos sólidos e demonstrando a legitimidade das defesas nos casos individuais." } ] },
+            "2": { risks: [ { type: "Financeiro", probability: "Baixa", impact: "Baixo", description: "O processo foi extinto, minimizando o risco financeiro direto. No entanto, o custo da defesa já foi incorrido.", mitigation: "Analisar a viabilidade de ação de regresso para reaver custos, se aplicável. Utilizar a decisão como precedente em casos futuros." }, { type: "Processual", probability: "Baixa", impact: "Alto", description: "A decisão de extinção por litigância predatória cria um precedente favorável extremamente valioso para ser usado em outras ações com o mesmo padrão.", mitigation: "Catalogar e disseminar a decisão para toda a equipe jurídica. Utilizar como jurisprudência central em contestações de casos similares." } ] },
+            "3": { risks: [ { type: "Financeiro", probability: "Média", impact: "Alto", description: "Caso a tese de afastamento dos reajustes seja acatada, o impacto financeiro será significativo, incluindo a restituição de valores e a redução da receita futura do contrato.", mitigation: "Preparar uma defesa técnica robusta, com perícia atuarial demonstrando a necessidade e correção dos reajustes com base na sinistralidade. Argumentar a legalidade das cláusulas contratuais." }, { type: "Processual", probability: "Alta", impact: "Médio", description: "O escritório adverso é conhecido por especialização na área, o que pode prolongar o litígio e aumentar a complexidade técnica da discussão.", mitigation: "Contratar assistente técnico especializado e focar em precedentes que validem reajustes por sinistralidade em contratos coletivos."} ] },
+            "4": { risks: [ { type: "Financeiro", probability: "Alta", impact: "Médio", description: "O custo do procedimento TAVI é elevado. A confirmação da liminar em sentença gerará um custo direto e pode incentivar novas ações.", mitigation: "Apresentar junta médica e parecer técnico que justifiquem a negativa com base em critérios da ANS e do contrato. Discutir a questão do rol taxativo/exemplificativo com base na jurisprudência mais recente do STJ."} ] }
         };
-
-
+        
         // --- Componentes ---
         const App = () => {
-          const [isLoggedIn, setIsLoggedIn] = React.useState(false);
-          const handleLogin = () => setIsLoggedIn(true);
-          const handleLogout = () => setIsLoggedIn(false);
+            const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+            const handleLogin = () => setIsLoggedIn(true);
+            const handleLogout = () => setIsLoggedIn(false);
 
-          if (!isLoggedIn) {
-            return <LoginPage onLogin={handleLogin} />;
-          }
-          return <MainLayout onLogout={handleLogout} />;
+            if (!isLoggedIn) {
+                return <LoginPage onLogin={handleLogin} />;
+            }
+            return <MainLayout onLogout={handleLogout} />;
         };
 
         const LoginPage = ({ onLogin }) => {
-          const [email, setEmail] = React.useState('advogado@exemplo.com');
-          const [password, setPassword] = React.useState('senha123');
-          const [error, setError] = React.useState('');
-          const handleLogin = (e) => { e.preventDefault(); if (email && password) { onLogin(); } else { setError('Por favor, preencha todos os campos.'); } };
-          return ( <div className="flex items-center justify-center min-h-screen bg-gray-100 font-sans"> <div className="w-full max-w-md p-4 md:p-8 space-y-6 bg-white rounded-lg shadow-xl"> <div className="text-center"><img src="https://dev-caw.github.io/combate-litigancia-abusiva/img/topo.png" /></div><form className="mt-8 space-y-6" onSubmit={handleLogin}> <input id="email-address" name="email" type="email" required className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Endereço de e-mail" value={email} onChange={(e) => setEmail(e.target.value)} /> <input id="password" name="password" type="password" required className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Senha" value={password} onChange={(e) => setPassword(e.target.value)} /> {error && <p className="text-red-500 text-xs text-center">{error}</p>} <div className="text-sm"> <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500"> Esqueceu sua senha? </a> </div> <button type="submit" className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"> <span className="absolute left-0 inset-y-0 flex items-center pl-3"> <LockClosedIcon className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" /> </span> Entrar </button> </form> </div> </div> );
+            const [email, setEmail] = React.useState('advogado@exemplo.com');
+            const [password, setPassword] = React.useState('senha123');
+            const [error, setError] = React.useState('');
+            const handleLogin = (e) => { e.preventDefault(); if (email && password) { onLogin(); } else { setError('Por favor, preencha todos os campos.'); } };
+            return ( <div className="flex items-center justify-center min-h-screen bg-gray-100 font-sans"> <div className="w-full max-w-md p-4 md:p-8 space-y-6 bg-white rounded-lg shadow-xl"> <div className="text-center"><img src="https://dev-caw.github.io/combate-litigancia-abusiva/img/topo.png" /></div><form className="mt-8 space-y-6" onSubmit={handleLogin}> <input id="email-address" name="email" type="email" required className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Endereço de e-mail" value={email} onChange={(e) => setEmail(e.target.value)} /> <input id="password" name="password" type="password" required className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Senha" value={password} onChange={(e) => setPassword(e.target.value)} /> {error && <p className="text-red-500 text-xs text-center">{error}</p>} <div className="text-sm"> <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500"> Esqueceu sua senha? </a> </div> <button type="submit" className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"> <span className="absolute left-0 inset-y-0 flex items-center pl-3"> <LockClosedIcon className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" /> </span> Entrar </button> </form> </div> </div> );
         };
 
         const Sidebar = ({ activeModule, onSelectModule, onLogout, isSidebarOpen, fraudAlert, closeSidebar }) => {
-          return (
-            <aside className={`bg-gray-800 text-gray-100 flex flex-col fixed lg:static inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 w-64`}>
-              <div className="flex items-center justify-between h-20 border-b border-gray-700 px-4">
-                <img src="https://dev-caw.github.io/combate-litigancia-abusiva/img/logo-white.png" alt="logo-white" style={{ padding: '40px' }} />
-                 <button onClick={closeSidebar} className="lg:hidden text-gray-400 hover:text-white">
-                    <CloseIcon />
-                 </button>
-              </div>
-              <nav className="flex-1 px-2 py-4 space-y-2">
-                {modules.map((module) => {
-                    const isFraudModule = module.id === 'DetecçãoDeFraudes';
-                    const isActive = activeModule === module.id;
-                    let customClass = 'hover:bg-gray-700';
-                    if (isActive) {
-                        customClass = 'bg-indigo-600';
-                    } else if (isFraudModule && fraudAlert) {
-                        customClass = 'bg-red-600 animate-pulse';
-                    }
-                    return (
-                      <a key={module.id} href="#" onClick={(e) => { e.preventDefault(); onSelectModule(module.id); closeSidebar(); }} className={`flex items-center p-2 text-base font-normal rounded-lg transition-colors ${customClass}`}>
-                        <module.icon />
-                        <span className="ml-3">{module.name}</span>
-                      </a>
-                    );
-                })}
-              </nav>
-              <div className="px-2 py-4 mt-auto border-t border-gray-700">
-                <a href="#" onClick={onLogout} className="flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-700 transition-colors">
-                  <LogoutIcon />
-                  <span className="ml-3">Sair</span>
-                </a>
-              </div>
-            </aside>
-          );
+            return (
+                <aside className={`bg-gray-800 text-gray-100 flex flex-col fixed lg:static inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 w-64`}>
+                    <div className="flex items-center justify-between h-20 border-b border-gray-700 px-4">
+                        <img src="https://dev-caw.github.io/combate-litigancia-abusiva/img/logo-white.png" alt="logo-white" style={{ padding: '40px' }} />
+                        <button onClick={closeSidebar} className="lg:hidden text-gray-400 hover:text-white">
+                            <CloseIcon />
+                        </button>
+                    </div>
+                    <nav className="flex-1 px-2 py-4 space-y-2">
+                        {modules.map((module) => {
+                            const isFraudModule = module.id === 'DetecçãoDeFraudes';
+                            const isActive = activeModule === module.id;
+                            let customClass = 'hover:bg-gray-700';
+                             if (isActive) {
+                                 customClass = 'bg-indigo-600';
+                             } else if (isFraudModule && fraudAlert) {
+                                 customClass = 'bg-red-600 animate-pulse';
+                             }
+                            return (
+                                <a key={module.id} href="#" onClick={(e) => { e.preventDefault(); onSelectModule(module.id); closeSidebar(); }} className={`flex items-center p-2 text-base font-normal rounded-lg transition-colors ${customClass}`}>
+                                    <module.icon />
+                                    <span className="ml-3">{module.name}</span>
+                                </a>
+                            );
+                        })}
+                    </nav>
+                    <div className="px-2 py-4 mt-auto border-t border-gray-700">
+                         <a href="#" onClick={onLogout} className="flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-700 transition-colors">
+                            <LogoutIcon />
+                            <span className="ml-3">Sair</span>
+                        </a>
+                    </div>
+                </aside>
+            );
         };
+        
+        // --- Componentes dos Módulos Principais ---
 
         const Dashboard = ({ onSelectModule }) => (
-          <div>
-            <img src="https://dev-caw.github.io/combate-litigancia-abusiva/img/combate.png" alt="logo-white" style={{ padding: '20px 25%' }} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {modules.filter(m => m.id !== 'Dashboard').map((module) => (
-                <div key={module.id} className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer flex flex-col items-center text-center" onClick={() => onSelectModule(module.id)}>
-                  <div className="text-indigo-600 mb-4"> <module.icon /> </div>
-                  <h3 className="text-lg font-semibold text-gray-700">{module.name}</h3>
+            <div>
+                <img src="https://dev-caw.github.io/combate-litigancia-abusiva/img/combate.png" alt="logo-white" style={{ padding: '20px 25%' }} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {modules.filter(m => m.id !== 'Dashboard').map((module) => (
+                        <div key={module.id} className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer flex flex-col items-center text-center" onClick={() => onSelectModule(module.id)}>
+                            <div className="text-indigo-600 mb-4"> <module.icon /> </div>
+                            <h3 className="text-lg font-semibold text-gray-700">{module.name}</h3>
+                        </div>
+                    ))}
                 </div>
-              ))}
             </div>
-          </div>
         );
 
         const OverviewModule = () => {
-            const [selectedCase, setSelectedCase] = React.useState(null);
-            const totalValue = mockCasesData.reduce((acc, c) => acc + c.value, 0);
-            const highRiskCases = mockCasesData.filter(c => c.riskLevel === 'Alto' || c.riskLevel === 'Crítico').length;
-            const getRiskColor = (level) => {
-                switch (level) {
-                    case 'Crítico': return 'bg-red-200 text-red-800';
-                    case 'Alto': return 'bg-yellow-200 text-yellow-800';
-                    case 'Médio': return 'bg-blue-200 text-blue-800';
-                    case 'Baixo': return 'bg-green-200 text-green-800';
-                    default: return 'bg-gray-200 text-gray-800';
-                }
-            };
+                const [selectedCase, setSelectedCase] = React.useState(null);
+                const totalValue = mockCasesData.reduce((acc, c) => acc + c.value, 0);
+                const highRiskCases = mockCasesData.filter(c => c.riskLevel === 'Alto' || c.riskLevel === 'Crítico').length;
+                const getRiskColor = (level) => {
+                    switch (level) {
+                        case 'Crítico': return 'bg-red-200 text-red-800';
+                        case 'Alto': return 'bg-yellow-200 text-yellow-800';
+                        case 'Médio': return 'bg-blue-200 text-blue-800';
+                        case 'Baixo': return 'bg-green-200 text-green-800';
+                        default: return 'bg-gray-200 text-gray-800';
+                    }
+                };
+                return (
+                    <div>
+                        <h2 className="text-3xl font-semibold text-gray-800 mb-6">Overview dos Casos</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                            <div className="bg-white p-5 rounded-lg shadow-md"><h4 className="text-gray-500 text-sm font-medium">TOTAL DE CASOS</h4><p className="text-3xl font-bold text-gray-800">{mockCasesData.length}</p></div>
+                            <div className="bg-white p-5 rounded-lg shadow-md"><h4 className="text-gray-500 text-sm font-medium">RISCO ALTO/CRÍTICO</h4><p className="text-3xl font-bold text-red-600">{highRiskCases}</p></div>
+                            <div className="bg-white p-5 rounded-lg shadow-md"><h4 className="text-gray-500 text-sm font-medium">VALOR TOTAL DAS CAUSAS</h4><p className="text-3xl font-bold text-gray-800">{totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+                        </div>
+                        <div className="bg-white rounded-lg shadow-md overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr><th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nº do Processo</th><th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parte Adversa</th><th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th><th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nível de Risco</th></tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {mockCasesData.map((c) => (<tr key={c.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedCase(c)}><td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{c.caseNumber}</td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{c.parties.defendant}</td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{c.status}</td><td className="px-6 py-4 whitespace-nowrap text-sm"><span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getRiskColor(c.riskLevel)}`}>{c.riskLevel}</span></td></tr>))}
+                                </tbody>
+                            </table>
+                        </div>
+                        {selectedCase && (<div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center" onClick={() => setSelectedCase(null)}><div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto m-4" onClick={e => e.stopPropagation()}><div className="p-6"><div className="flex justify-between items-start"><div><h3 className="text-xl md:text-2xl font-bold text-gray-900">{selectedCase.subject}</h3><p className="text-sm text-gray-500 mt-1">{selectedCase.caseNumber}</p></div><button onClick={() => setSelectedCase(null)} className="text-gray-400 hover:text-gray-600"><CloseIcon/></button></div><div className="mt-4 border-t pt-4"><h4 className="font-semibold text-gray-800 mb-3">Resumo do Caso</h4><p className="text-gray-700 text-sm mb-4">{selectedCase.details.summary}</p><h4 className="font-semibold text-gray-800 mb-3">Indicadores de Abuso Identificados</h4><ul className="list-disc list-inside space-y-2 mb-4">{selectedCase.details.indicators.map((indicator, index) => (<li key={index} className="text-sm text-yellow-800 bg-yellow-50 p-2 rounded-md">{indicator}</li>))}</ul><h4 className="font-semibold text-gray-800 mb-3">Documentos Relevantes</h4><div className="flex flex-wrap gap-2">{selectedCase.details.documents.map((doc, index) => (<span key={index} className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">{doc}</span>))}</div></div></div></div></div>)}
+                    </div>
+                );
+        };
+        
+        const GeminiResponseRenderer = ({ responseText }) => {
+            if (!responseText) return null;
+            // A simple approach: split by newlines and wrap in <p>. 
+            // A more robust solution would use a Markdown parser.
+            const paragraphs = responseText.split('\n').filter(p => p.trim() !== '');
             return (
-                <div>
-                    <h2 className="text-3xl font-semibold text-gray-800 mb-6">Overview dos Casos</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        <div className="bg-white p-5 rounded-lg shadow-md"><h4 className="text-gray-500 text-sm font-medium">TOTAL DE CASOS</h4><p className="text-3xl font-bold text-gray-800">{mockCasesData.length}</p></div>
-                        <div className="bg-white p-5 rounded-lg shadow-md"><h4 className="text-gray-500 text-sm font-medium">RISCO ALTO/CRÍTICO</h4><p className="text-3xl font-bold text-red-600">{highRiskCases}</p></div>
-                        <div className="bg-white p-5 rounded-lg shadow-md"><h4 className="text-gray-500 text-sm font-medium">VALOR TOTAL DAS CAUSAS</h4><p className="text-3xl font-bold text-gray-800">{totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
-                    </div>
-                    <div className="bg-white rounded-lg shadow-md overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr><th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nº do Processo</th><th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parte Adversa</th><th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th><th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nível de Risco</th></tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {mockCasesData.map((c) => (<tr key={c.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedCase(c)}><td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{c.caseNumber}</td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{c.parties.defendant}</td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{c.status}</td><td className="px-6 py-4 whitespace-nowrap text-sm"><span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getRiskColor(c.riskLevel)}`}>{c.riskLevel}</span></td></tr>))}
-                            </tbody>
-                        </table>
-                    </div>
-                    {selectedCase && (<div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center" onClick={() => setSelectedCase(null)}><div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto m-4" onClick={e => e.stopPropagation()}><div className="p-6"><div className="flex justify-between items-start"><div><h3 className="text-xl md:text-2xl font-bold text-gray-900">{selectedCase.subject}</h3><p className="text-sm text-gray-500 mt-1">{selectedCase.caseNumber}</p></div><button onClick={() => setSelectedCase(null)} className="text-gray-400 hover:text-gray-600"><CloseIcon/></button></div><div className="mt-4 border-t pt-4"><h4 className="font-semibold text-gray-800 mb-3">Resumo do Caso</h4><p className="text-gray-700 text-sm mb-4">{selectedCase.details.summary}</p><h4 className="font-semibold text-gray-800 mb-3">Indicadores de Abuso Identificados</h4><ul className="list-disc list-inside space-y-2 mb-4">{selectedCase.details.indicators.map((indicator, index) => (<li key={index} className="text-sm text-yellow-800 bg-yellow-50 p-2 rounded-md">{indicator}</li>))}</ul><h4 className="font-semibold text-gray-800 mb-3">Documentos Relevantes</h4><div className="flex flex-wrap gap-2">{selectedCase.details.documents.map((doc, index) => (<span key={index} className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">{doc}</span>))}</div></div></div></div></div>)}
+                <div className="space-y-4 text-gray-700 gemini-response" dangerouslySetInnerHTML={{ __html: responseText.replace(/\n/g, '<br />') }}>
                 </div>
             );
         };
 
-        const GeminiResponseRenderer = ({ responseText }) => {
-            if (!responseText) return null;
-            const sections = responseText.split('### ').slice(1);
-            return (<div className="space-y-6">{sections.map((section, index) => { const lines = section.split('\n'); const title = lines[0].trim(); const content = lines.slice(1).filter(line => line.trim() !== ''); return ( <div key={index}><h4 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-3">{title}</h4><div className="space-y-2">{content.map((line, lineIndex) => { if (line.trim().startsWith('- ')) { return (<div key={lineIndex} className="flex items-start text-gray-700"><span className="text-indigo-500 mr-3 mt-1">&#8226;</span><span>{line.trim().substring(2)}</span></div>); } return <p key={lineIndex} className="text-gray-700">{line}</p>; })}</div></div> ); })}</div>);
-        };
-
         const AnaliseDeDadosIAModule = ({ onAnalysisComplete }) => {
-            const [caseText, setCaseText] = React.useState('Reclamante alega horas extras não pagas, mas a empresa possui um sistema de ponto biométrico que foi verificado em inspeção judicial e considerado regular. O advogado do reclamante possui outras 50 ações idênticas contra a mesma empresa, com as mesmas alegações. Há risco de fraude e litigância predatória.');
+                const [caseText, setCaseText] = React.useState('Reclamante alega horas extras não pagas, mas a empresa possui um sistema de ponto biométrico que foi verificado em inspeção judicial e considerado regular. O advogado do reclamante possui outras 50 ações idênticas contra a mesma empresa, com as mesmas alegações. Há risco de fraude e litigância predatória.');
+                const [isAnalyzing, setIsAnalyzing] = React.useState(false);
+                const [analysisResult, setAnalysisResult] = React.useState('');
+                
+                const handleAnalyzeWithAI = async () => { 
+                    if (!caseText.trim()) return; 
+                    setIsAnalyzing(true); 
+                    setAnalysisResult(''); 
+                    let text = ''; 
+                    const prompt = `Aja como um advogado sênior e estrategista. Analise o seguinte relato de um caso jurídico. Forneça uma resposta estruturada usando a formatação "### Título" para os cabeçalhos e "- " para listas. A resposta deve conter EXATAMENTE os seguintes cabeçalhos:\n### Resumo do Caso\n### Pontos de Atenção e Riscos\n### Sugestão de Estratégia\n\nTexto do caso para análise:\n---\n${caseText}\n---`; 
+                    try { 
+                        const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] }; 
+                        const apiKey = ""; 
+                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`; 
+                        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); 
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); 
+                        const result = await response.json(); 
+                        text = result.candidates?.[0]?.content?.parts?.[0]?.text || ''; 
+                        if (text) { 
+                            setAnalysisResult(text.replace(/### (.*?)\n/g, '<h3>$1</h3>').replace(/- (.*?)\n/g, '<ul><li class="flex"><span class="mr-2 text-indigo-500">&bull;</span><span>$1</span></li></ul>').replace(/\n/g, '<p>')); 
+                        } else { 
+                            setAnalysisResult("Erro: A resposta da IA estava em um formato inesperado."); 
+                        } 
+                    } catch (error) { 
+                        console.error("Erro ao chamar a API do Gemini:", error); 
+                        setAnalysisResult("Ocorreu um erro ao gerar a análise. Tente novamente."); 
+                    } finally { 
+                        setIsAnalyzing(false); 
+                        if (text && (text.toLowerCase().includes('risco') || text.toLowerCase().includes('fraude') || text.toLowerCase().includes('abusiva') || text.toLowerCase().includes('predatória'))) { 
+                            onAnalysisComplete(true); 
+                        } 
+                    } 
+                };
+
+                return (<div><h2 className="text-3xl font-semibold text-gray-800 mb-2">Análise de Dados e Estratégia com IA</h2><p className="text-gray-600 mb-6">Descreva os fatos de um caso e a IA irá gerar um resumo, identificar riscos e sugerir estratégias.</p><div className="bg-white p-6 rounded-lg shadow-md mb-6"><h3 className="text-xl font-semibold text-gray-700 mb-4">1. Descreva o Caso</h3><textarea value={caseText} onChange={(e) => setCaseText(e.target.value)} placeholder="Cole ou descreva aqui os fatos, petições ou documentos relevantes para a análise..." className="w-full h-40 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" /> <button onClick={handleAnalyzeWithAI} disabled={!caseText.trim() || isAnalyzing} className="mt-4 w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300"><SparkleIcon /> {isAnalyzing ? 'Analisando...' : 'Gerar Resumo e Análise Estratégica'}</button></div>{(isAnalyzing || analysisResult) && (<div className="bg-white p-6 rounded-lg shadow-md"><h3 className="text-xl font-semibold text-gray-700 mb-4">2. Análise Estratégica da IA</h3>{isAnalyzing && <p className="text-indigo-700">Aguarde, a IA está processando sua solicitação...</p>}{analysisResult && <GeminiResponseRenderer responseText={analysisResult} />}</div>)}</div>);
+        };
+        
+        const DeteccaoDeFraudesModule = () => {
+                const [isScanning, setIsScanning] = React.useState(false);
+                const [scanResults, setScanResults] = React.useState([]);
+
+                const handleScan = () => {
+                    setIsScanning(true);
+                    setScanResults([]);
+                    setTimeout(() => {
+                        const highRiskCases = mockCasesData.filter(c => c.riskLevel === 'Alto' || c.riskLevel === 'Crítico');
+                        const results = {};
+                         
+                        highRiskCases.forEach(c => {
+                            if (c.details.indicators.some(ind => ind.includes("Concentração de grande volume") || ind.includes("50 ações idênticas"))) {
+                                if(!results['l']) results['l'] = { indicator: cnjIndicators.find(i => i.id === 'l'), cases: []};
+                                results['l'].cases.push(c);
+                            }
+                            if (c.details.indicators.some(ind => ind.includes("petições genéricas") || ind.includes("causas de pedir idênticas"))) {
+                                if(!results['g']) results['g'] = { indicator: cnjIndicators.find(i => i.id === 'g'), cases: []};
+                                results['g'].cases.push(c);
+                            }
+                            if (c.details.indicators.some(ind => ind.includes("assédio processual"))) {
+                                 if(!results['m']) results['m'] = { indicator: cnjIndicators.find(i => i.id === 'm'), cases: []};
+                                 results['m'].cases.push(c);
+                            }
+                        });
+                         
+                        setScanResults(Object.values(results));
+                        setIsScanning(false);
+                    }, 2500);
+                };
+
+                return (
+                    <div>
+                        <h2 className="text-3xl font-semibold text-gray-800 mb-2">Detecção de Fraudes e Litigância Abusiva</h2>
+                        <p className="text-gray-600 mb-6">Inicie uma varredura para identificar padrões de conduta abusiva nos casos ativos, com base na Recomendação 159/2024 do CNJ.</p>
+                        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+                            <button onClick={handleScan} disabled={isScanning} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700 disabled:bg-red-300 transition-colors">
+                                <SearchIcon/>
+                                {isScanning ? 'Varrendo Casos...' : 'Iniciar Varredura de Fraudes'}
+                            </button>
+                        </div>
+                        {isScanning && ( <div className="text-center p-6 bg-white rounded-lg shadow-md"> <p className="text-red-700 font-semibold animate-pulse">Analisando base de dados em busca de padrões...</p> </div> )}
+                        {!isScanning && scanResults.length === 0 && ( <div className="text-center p-6 bg-white rounded-lg shadow-md"> <p className="text-gray-500">Nenhum padrão de fraude detectado na última varredura ou a varredura não foi iniciada.</p> </div> )}
+                        {scanResults.length > 0 && (
+                            <div className="space-y-6">
+                                <h3 className="text-2xl font-semibold text-gray-800">Resultados da Varredura</h3>
+                                {scanResults.map(({indicator, cases}) => (
+                                     <div key={indicator.id} className="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500">
+                                         <h4 className="text-xl font-bold text-red-700">{indicator.title}</h4>
+                                         <p className="text-gray-600 mt-1">{indicator.description}</p>
+                                         <p className="text-xs text-gray-500 mt-1">Enquadramento: {indicator.cpc}</p>
+                                         <div className="mt-4">
+                                             <h5 className="font-semibold text-gray-800 mb-2">Casos Relacionados ({cases.length}):</h5>
+                                             <div className="flex flex-wrap gap-2">
+                                                {cases.map(c => ( <span key={c.id} className="px-3 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800">{c.caseNumber}</span>))}
+                                            </div>
+                                         </div>
+                                     </div>
+                                ))}
+                            </div>
+                         )}
+                    </div>
+                );
+        };
+        
+        // --- NOVOS MÓDULOS ---
+
+        // Função auxiliar para converter arquivo para base64
+        const fileToBase64 = (file) => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = error => reject(error);
+        });
+
+        const AnaliseBoletoSubModule = () => {
+            const [file, setFile] = React.useState(null);
+            const [preview, setPreview] = React.useState(null);
             const [isAnalyzing, setIsAnalyzing] = React.useState(false);
             const [analysisResult, setAnalysisResult] = React.useState('');
-            const handleAnalyzeWithAI = async () => { if (!caseText.trim()) return; setIsAnalyzing(true); setAnalysisResult(''); let text = ''; const prompt = `Aja como um advogado sênior e estrategista. Analise o seguinte relato de um caso jurídico. Forneça uma resposta estruturada usando a formatação "### Título" para os cabeçalhos e "- " para listas. A resposta deve conter EXATAMENTE os seguintes cabeçalhos:\n### Resumo do Caso\n### Pontos de Atenção e Riscos\n### Sugestão de Estratégia\n\nTexto do caso para análise:\n---\n${caseText}\n---`; try { const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] }; const apiKey = ""; const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`; const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); const result = await response.json(); text = result.candidates?.[0]?.content?.parts?.[0]?.text || ''; if (text) { setAnalysisResult(text); } else { setAnalysisResult("Erro: A resposta da IA estava em um formato inesperado."); } } catch (error) { console.error("Erro ao chamar a API do Gemini:", error); setAnalysisResult("Ocorreu um erro ao gerar a análise. Tente novamente."); } finally { setIsAnalyzing(false); if (text && (text.toLowerCase().includes('risco') || text.toLowerCase().includes('fraude') || text.toLowerCase().includes('abusiva') || text.toLowerCase().includes('predatória'))) { onAnalysisComplete(true); } } };
-            return (<div><h2 className="text-3xl font-semibold text-gray-800 mb-2">Análise de Dados e Estratégia com IA</h2><p className="text-gray-600 mb-6">Descreva os fatos de um caso e a IA irá gerar um resumo, identificar riscos e sugerir estratégias.</p><div className="bg-white p-6 rounded-lg shadow-md mb-6"><h3 className="text-xl font-semibold text-gray-700 mb-4">1. Descreva o Caso</h3><textarea value={caseText} onChange={(e) => setCaseText(e.target.value)} placeholder="Cole ou descreva aqui os fatos, petições ou documentos relevantes para a análise..." className="w-full h-40 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" /> <button onClick={handleAnalyzeWithAI} disabled={!caseText.trim() || isAnalyzing} className="mt-4 w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300"><SparkleIcon /> {isAnalyzing ? 'Analisando...' : 'Gerar Resumo e Análise Estratégica'}</button></div>{(isAnalyzing || analysisResult) && (<div className="bg-white p-6 rounded-lg shadow-md"><h3 className="text-xl font-semibold text-gray-700 mb-4">2. Análise Estratégica da IA</h3>{isAnalyzing && <p className="text-indigo-700">Aguarde, a IA está processando sua solicitação...</p>}{analysisResult && <GeminiResponseRenderer responseText={analysisResult} />}</div>)}</div>);
-        };
+            const fileInputRef = React.useRef();
 
-        const DeteccaoDeFraudesModule = () => {
-            const [isScanning, setIsScanning] = React.useState(false);
-            const [scanResults, setScanResults] = React.useState([]);
+            const handleFileChange = (e) => {
+                const selectedFile = e.target.files[0];
+                if (selectedFile) {
+                    setFile(selectedFile);
+                    setPreview(URL.createObjectURL(selectedFile));
+                    setAnalysisResult('');
+                }
+            };
 
-            const handleScan = () => {
-                setIsScanning(true);
-                setScanResults([]);
-                setTimeout(() => {
-                    const highRiskCases = mockCasesData.filter(c => c.riskLevel === 'Alto' || c.riskLevel === 'Crítico');
-                    const results = {};
+            const handleAnalyze = async () => {
+                if (!file) return;
+                setIsAnalyzing(true);
+                setAnalysisResult('');
+                try {
+                    const base64Image = await fileToBase64(file);
+                    const prompt = "Analise esta imagem de um boleto bancário brasileiro em busca de quaisquer sinais de fraude ou adulteração. Verifique o código de barras, a linha digitável, o logo do banco, informações do beneficiário e pagador, e a formatação geral. Forneça um parecer técnico detalhado em português, apontando cada possível inconsistência encontrada e um veredito final sobre a probabilidade de ser um boleto fraudulento.";
                     
-                    highRiskCases.forEach(c => {
-                         if (c.details.indicators.some(ind => ind.includes("Concentração de grande volume") || ind.includes("50 ações idênticas"))) {
-                            if(!results['l']) results['l'] = { indicator: cnjIndicators.find(i => i.id === 'l'), cases: []};
-                            results['l'].cases.push(c);
-                         }
-                         if (c.details.indicators.some(ind => ind.includes("petições genéricas") || ind.includes("causas de pedir idênticas"))) {
-                            if(!results['g']) results['g'] = { indicator: cnjIndicators.find(i => i.id === 'g'), cases: []};
-                            results['g'].cases.push(c);
-                         }
-                         if (c.details.indicators.some(ind => ind.includes("assédio processual"))) {
-                             if(!results['m']) results['m'] = { indicator: cnjIndicators.find(i => i.id === 'm'), cases: []};
-                             results['m'].cases.push(c);
-                         }
+                    const payload = {
+                        contents: [{
+                            role: "user",
+                            parts: [
+                                { text: prompt },
+                                { inlineData: { mimeType: file.type, data: base64Image } }
+                            ]
+                        }]
+                    };
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
                     });
+
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                     
-                    setScanResults(Object.values(results));
-                    setIsScanning(false);
-                }, 2500);
+                    const result = await response.json();
+                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "Não foi possível analisar a imagem.";
+                    setAnalysisResult(text);
+                } catch (error) {
+                    console.error("Erro na análise do boleto:", error);
+                    setAnalysisResult("Ocorreu um erro ao tentar analisar o documento. Verifique o console para mais detalhes.");
+                } finally {
+                    setIsAnalyzing(false);
+                }
             };
 
             return (
-                <div>
-                    <h2 className="text-3xl font-semibold text-gray-800 mb-2">Detecção de Fraudes e Litigância Abusiva</h2>
-                    <p className="text-gray-600 mb-6">Inicie uma varredura para identificar padrões de conduta abusiva nos casos ativos, com base na Recomendação 159/2024 do CNJ.</p>
-                    <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-                        <button onClick={handleScan} disabled={isScanning} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700 disabled:bg-red-300 transition-colors">
-                            <SearchIcon/>
-                            {isScanning ? 'Varrendo Casos...' : 'Iniciar Varredura de Fraudes'}
-                        </button>
+                <div className="space-y-6">
+                    <p className="text-gray-600">Faça o upload da imagem de um boleto. A IA do Gemini irá inspecionar o documento em busca de indícios de fraude e emitir um parecer técnico.</p>
+                    <div 
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-indigo-500 bg-gray-50"
+                        onClick={() => fileInputRef.current.click()}
+                    >
+                        <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+                        <UploadIcon className="mx-auto h-12 w-12 text-gray-400" />
+                        <p className="mt-2 text-sm text-gray-600">{file ? `Arquivo selecionado: ${file.name}` : "Clique para selecionar um arquivo"}</p>
+                        <p className="text-xs text-gray-500">PNG, JPG, GIF até 10MB</p>
                     </div>
-                    {isScanning && ( <div className="text-center p-6 bg-white rounded-lg shadow-md"> <p className="text-red-700 font-semibold animate-pulse">Analisando base de dados em busca de padrões...</p> </div> )}
-                    {!isScanning && scanResults.length === 0 && ( <div className="text-center p-6 bg-white rounded-lg shadow-md"> <p className="text-gray-500">Nenhum padrão de fraude detectado na última varredura ou a varredura não foi iniciada.</p> </div> )}
-                    {scanResults.length > 0 && (
-                         <div className="space-y-6">
-                            <h3 className="text-2xl font-semibold text-gray-800">Resultados da Varredura</h3>
-                            {scanResults.map(({indicator, cases}) => (
-                                <div key={indicator.id} className="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500">
-                                   <h4 className="text-xl font-bold text-red-700">{indicator.title}</h4>
-                                   <p className="text-gray-600 mt-1">{indicator.description}</p>
-                                   <p className="text-xs text-gray-500 mt-1">Enquadramento: {indicator.cpc}</p>
-                                   <div className="mt-4">
-                                       <h5 className="font-semibold text-gray-800 mb-2">Casos Relacionados ({cases.length}):</h5>
-                                       <div className="flex flex-wrap gap-2">
-                                           {cases.map(c => ( <span key={c.id} className="px-3 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800">{c.caseNumber}</span>))}
-                                       </div>
-                                   </div>
-                                </div>
-                            ))}
-                         </div>
+                    {preview && (
+                        <div className="mt-4">
+                            <h4 className="font-semibold text-gray-700 mb-2">Pré-visualização:</h4>
+                            <img src={preview} alt="Pré-visualização do boleto" className="max-w-full md:max-w-md mx-auto rounded-lg shadow-md" />
+                        </div>
+                    )}
+                    <button onClick={handleAnalyze} disabled={!file || isAnalyzing} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300">
+                        <SparkleIcon />
+                        {isAnalyzing ? "Analisando Boleto..." : "Analisar com IA"}
+                    </button>
+                    {(isAnalyzing || analysisResult) && (
+                        <div className="bg-white p-6 rounded-lg shadow-md mt-6">
+                            <h3 className="text-xl font-semibold text-gray-700 mb-4">Parecer Técnico da IA</h3>
+                            {isAnalyzing ? <p className="text-indigo-700">Analisando... Por favor, aguarde.</p> : <GeminiResponseRenderer responseText={analysisResult} />}
+                        </div>
                     )}
                 </div>
             );
         };
+        
+        const ValidacaoAssinaturaSubModule = () => {
+            const [file, setFile] = React.useState(null);
+            const [isAnalyzing, setIsAnalyzing] = React.useState(false);
+            const [analysisResult, setAnalysisResult] = React.useState('');
+            const fileInputRef = React.useRef();
 
-        const fileToBase64 = (file) => new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = error => reject(error); });
+            const handleFileChange = (e) => {
+                const selectedFile = e.target.files[0];
+                if (selectedFile) {
+                    setFile(selectedFile);
+                    setAnalysisResult('');
+                }
+            };
+            
+            const handleAnalyze = async () => {
+                if (!file) return;
+                setIsAnalyzing(true);
+                setAnalysisResult('');
+                try {
+                    // Simulação
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    const prompt = `Aja como um perito em assinaturas digitais. Foi feito o upload de um documento (procuração). A sua tarefa é gerar um laudo técnico simulado sobre a conformidade da assinatura digital com os padrões ICP-Brasil. O laudo deve ser estruturado com os seguintes tópicos em negrito: **Verificação do Certificado Digital**, **Validade da Cadeia de Confiança**, **Carimbo de Tempo (Timestamp)** e **Conclusão Pericial**. Mesmo sendo uma simulação, o texto deve ser técnico, verossímil e conclusivo sobre a validade (ou não) da assinatura.`;
+                    
+                    const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    
+                    const result = await response.json();
+                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "Não foi possível gerar o laudo.";
+                    setAnalysisResult(text);
+                } catch (error) {
+                    console.error("Erro na validação simulada:", error);
+                    setAnalysisResult("Ocorreu um erro ao gerar o laudo simulado.");
+                } finally {
+                    setIsAnalyzing(false);
+                }
+            };
 
-        const AnaliseBoletoSubModule = () => { /* ... (código mantido) ... */ };
-        const ValidacaoAssinaturaSubModule = () => { /* ... (código mantido) ... */ };
-        const GeolocalizacaoSubModule = () => { /* ... (código mantido) ... */ };
-        const VerificacaoDeDocsModule = () => { /* ... (código mantido) ... */ };
-        const AutomacaoDaDefesaModule = () => { /* ... (código mantido) ... */ };
-        const RiskMatrix = ({ risks }) => { /* ... (código mantido) ... */ };
-        const GestaoDeRiscosModule = () => { /* ... (código mantido) ... */ };
-        const SituacaoDoAdversoModule = () => { /* ... (código mantido) ... */ };
+            return (
+                <div className="space-y-6">
+                    <p className="text-gray-600">Faça o upload de um documento (ex: procuração). A IA irá gerar um laudo **simulado** sobre a conformidade da assinatura digital com os padrões ICP-Brasil.</p>
+                     <div 
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-indigo-500 bg-gray-50"
+                        onClick={() => fileInputRef.current.click()}
+                    >
+                        <input type="file" accept=".pdf" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+                        <UploadIcon className="mx-auto h-12 w-12 text-gray-400" />
+                        <p className="mt-2 text-sm text-gray-600">{file ? `Arquivo selecionado: ${file.name}` : "Clique para selecionar um arquivo PDF"}</p>
+                    </div>
+                     <button onClick={handleAnalyze} disabled={!file || isAnalyzing} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300">
+                        <SparkleIcon />
+                        {isAnalyzing ? "Verificando Assinatura..." : "Gerar Laudo Simulado"}
+                    </button>
+                    {(isAnalyzing || analysisResult) && (
+                        <div className="bg-white p-6 rounded-lg shadow-md mt-6">
+                            <h3 className="text-xl font-semibold text-gray-700 mb-4">Laudo de Verificação (Simulado)</h3>
+                            {isAnalyzing ? <p className="text-indigo-700">Analisando... Por favor, aguarde.</p> : <GeminiResponseRenderer responseText={analysisResult} />}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+        
+        const GeolocalizacaoSubModule = () => {
+            const [locations, setLocations] = React.useState({ author: '', office: '', signature: '' });
+            const [isAnalyzing, setIsAnalyzing] = React.useState(false);
+            const [analysisResult, setAnalysisResult] = React.useState('');
+
+            const handleInputChange = (e) => {
+                const { name, value } = e.target;
+                setLocations(prev => ({ ...prev, [name]: value }));
+            };
+
+            const handleAnalyze = async () => {
+                const { author, office, signature } = locations;
+                if (!author || !office || !signature) {
+                    alert('Por favor, preencha todos os campos de localização.');
+                    return;
+                }
+                setIsAnalyzing(true);
+                setAnalysisResult('');
+                try {
+                    const prompt = `Aja como um investigador de fraudes. Analise a seguinte situação de geolocalização e aponte possíveis inconsistências geográficas ou bandeiras vermelhas. Locais informados: Localização do autor (comprovante de residência): ${author}. Localização do escritório de advocacia: ${office}. Localização onde a procuração foi assinada digitalmente: ${signature}. Forneça uma análise concisa sobre a plausibilidade e os possíveis riscos (ex: captação de clientes indevida, 'advocacia itinerante', etc.).`;
+                    
+                    const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    
+                    const result = await response.json();
+                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "Não foi possível gerar a análise.";
+                    setAnalysisResult(text);
+
+                } catch (error) {
+                    console.error("Erro na análise de geolocalização:", error);
+                    setAnalysisResult("Ocorreu um erro ao gerar a análise de geolocalização.");
+                } finally {
+                    setIsAnalyzing(false);
+                }
+            };
+            
+            return (
+                <div className="space-y-6">
+                    <p className="text-gray-600">Simule uma análise de geolocalização. Insira os locais (cidade/estado) do comprovante de residência, do escritório e da assinatura da procuração. A IA irá analisar possíveis inconsistências.</p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label htmlFor="author" className="block text-sm font-medium text-gray-700">Local do Autor (Residência)</label>
+                            <input type="text" name="author" id="author" value={locations.author} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Ex: Manaus, AM" />
+                        </div>
+                        <div>
+                            <label htmlFor="office" className="block text-sm font-medium text-gray-700">Local do Escritório</label>
+                            <input type="text" name="office" id="office" value={locations.office} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Ex: São Paulo, SP" />
+                        </div>
+                        <div>
+                            <label htmlFor="signature" className="block text-sm font-medium text-gray-700">Local da Assinatura</label>
+                            <input type="text" name="signature" id="signature" value={locations.signature} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Ex: Salvador, BA" />
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-lg shadow-md">
+                        <h4 className="font-semibold text-lg mb-4 text-gray-800">Mapa Interativo (Simulação)</h4>
+                        <div className="relative w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+                            <p className="text-gray-500 z-10">Mapa simulado</p>
+                            <img src="https://dev-caw.github.io/combate-litigancia-abusiva/img/mapa-brasil.svg" className="absolute object-cover w-full h-full opacity-30" />
+                            {locations.author && <div className="absolute top-1/4 left-1/4 transform -translate-x-1/2 -translate-y-1/2 flex items-center flex-col text-center"><div className="w-4 h-4 bg-blue-600 rounded-full shadow-lg"></div><span className="text-xs font-bold text-blue-800 mt-1">Autor</span></div>}
+                            {locations.office && <div className="absolute bottom-1/3 right-1/4 transform translate-x-1/2 translate-y-1/2 flex items-center flex-col text-center"><div className="w-4 h-4 bg-green-600 rounded-full shadow-lg"></div><span className="text-xs font-bold text-green-800 mt-1">Escritório</span></div>}
+                            {locations.signature && <div className="absolute top-1/2 right-1/2 transform translate-x-1/2 -translate-y-1/2 flex items-center flex-col text-center"><div className="w-4 h-4 bg-red-600 rounded-full shadow-lg"></div><span className="text-xs font-bold text-red-800 mt-1">Assinatura</span></div>}
+                        </div>
+                    </div>
+
+                    <button onClick={handleAnalyze} disabled={isAnalyzing || !locations.author || !locations.office || !locations.signature} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300">
+                        <SparkleIcon />
+                        {isAnalyzing ? "Analisando Geolocalização..." : "Analisar Inconsistências"}
+                    </button>
+
+                    {(isAnalyzing || analysisResult) && (
+                        <div className="bg-white p-6 rounded-lg shadow-md mt-6">
+                            <h3 className="text-xl font-semibold text-gray-700 mb-4">Análise Geográfica da IA</h3>
+                            {isAnalyzing ? <p className="text-indigo-700">Analisando... Por favor, aguarde.</p> : <GeminiResponseRenderer responseText={analysisResult} />}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+        
+        const VerificacaoDeDocsModule = () => {
+            const [activeTab, setActiveTab] = React.useState('analiseBoleto');
+            const tabs = [
+                { id: 'analiseBoleto', label: 'Análise de Documentos (Boletos)' },
+                { id: 'validacaoAssinatura', label: 'Validação de Assinatura Digital' },
+                { id: 'geolocalizacao', label: 'Análise de Geolocalização' }
+            ];
+
+            return (
+                <div>
+                    <h2 className="text-3xl font-semibold text-gray-800 mb-6">Verificação de Documentos com IA</h2>
+                    <div className="border-b border-gray-200">
+                        <nav className="-mb-px flex space-x-6" aria-label="Tabs">
+                            {tabs.map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`${
+                                        activeTab === tab.id
+                                            ? 'border-indigo-500 text-indigo-600'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+                                >
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </nav>
+                    </div>
+                    <div className="mt-6 bg-white p-6 rounded-lg shadow-md">
+                        {activeTab === 'analiseBoleto' && <AnaliseBoletoSubModule />}
+                        {activeTab === 'validacaoAssinatura' && <ValidacaoAssinaturaSubModule />}
+                        {activeTab === 'geolocalizacao' && <GeolocalizacaoSubModule />}
+                    </div>
+                </div>
+            );
+        };
+        
+        const AutomacaoDaDefesaModule = () => {
+            const teses = [
+                { id: 'normas', title: "Observância das normas contratuais e regulatórias" },
+                { id: 'tecnica', title: "Fundamentação técnica das decisões" },
+                { id: 'coletivos', title: "Natureza dos contratos coletivos" },
+                { id: 'ausencia_prova', title: "Ausência de prova de irregularidade" },
+                { id: 'contestacao_urgencia', title: "Contestação da urgência alegada" },
+                { id: 'deferencia_ans', title: "Deferência à Agência Reguladora (ANS)" },
+                { id: 'impacto_decisoes', title: "Análise de Impacto das Decisões (LINDB/AED)" },
+                { id: 'ilegitimidade_passiva', title: "Ilegitimidade Passiva" },
+                { id: 'dialeticidade', title: "Dialeticidade Recursal" },
+                { id: 'impugnacao_vulnerabilidade', title: "Impugnação à Vulnerabilidade Técnica ou Informacional" },
+                { id: 'indeferimento_tutela', title: "Indeferimento da tutela de urgência" },
+                { id: 'producao_provas', title: "Produção de provas" },
+                { id: 'juntada_docs', title: "Juntada de documentos pela parte autora" },
+                { id: 'ma_fe', title: "Identificação e punição da litigância de má-fé" },
+                { id: 'segredo_justica', title: "Indeferimento do pedido de segredo de justiça" },
+                { id: 'indeferimento_total', title: "Indeferimento total dos pleitos" },
+                { id: 'custas_honorarios', title: "Condenação em custas e honorários sucumbenciais" },
+            ];
+            
+            const [caseContext, setCaseContext] = React.useState("A parte autora, uma empresa de engenharia, ajuizou ação para questionar reajustes anuais por sinistralidade aplicados nos últimos 8 anos em seu contrato de plano de saúde coletivo, alegando abusividade e pedindo a restituição dos valores pagos a mais. Não apresentou laudo atuarial, baseando o pedido apenas em alegações genéricas de onerosidade excessiva.");
+            const [isGenerating, setIsGenerating] = React.useState(false);
+            const [generatedText, setGeneratedText] = React.useState('');
+            const [activeThesis, setActiveThesis] = React.useState('');
+
+            const handleGenerate = async (tese) => {
+                if (!caseContext.trim()) {
+                    alert('Por favor, descreva o contexto do caso.');
+                    return;
+                }
+                setIsGenerating(true);
+                setGeneratedText('');
+                setActiveThesis(tese.title);
+                try {
+                    const prompt = `Aja como um advogado especialista. Dado o contexto do caso abaixo, redija até três parágrafos de argumentação jurídica focados especificamente na seguinte tese:\n\n**Tese:** "${tese.title}"\n\n**Contexto do Caso:**\n${caseContext}\n\nElabore uma argumentação concisa, persuasiva e juridicamente fundamentada para ser usada em uma contestação ou recurso.`;
+                    
+                    const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    
+                    const result = await response.json();
+                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "Não foi possível gerar a argumentação.";
+                    setGeneratedText(text);
+                } catch (error) {
+                    console.error("Erro ao gerar tese:", error);
+                    setGeneratedText("Ocorreu um erro ao gerar a argumentação. Tente novamente.");
+                } finally {
+                    setIsGenerating(false);
+                }
+            };
+            
+            return (
+                <div>
+                    <h2 className="text-3xl font-semibold text-gray-800 mb-2">Automação da Defesa</h2>
+                    <p className="text-gray-600 mb-6">Descreva o contexto do caso, escolha uma tese e deixe a IA construir a argumentação jurídica para você.</p>
+                    
+                    <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+                        <label htmlFor="caseContext" className="block text-xl font-semibold text-gray-700 mb-4">1. Contexto do Caso</label>
+                        <textarea 
+                            id="caseContext" 
+                            value={caseContext} 
+                            onChange={(e) => setCaseContext(e.target.value)}
+                            className="w-full h-32 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="Descreva os fatos principais, pedidos e argumentos da parte contrária..."
+                        />
+                    </div>
+
+                    <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+                        <h3 className="text-xl font-semibold text-gray-700 mb-4">2. Selecione a Tese para Desenvolver</h3>
+                        <div className="flex flex-wrap gap-3">
+                            {teses.map(tese => (
+                                <button 
+                                    key={tese.id}
+                                    onClick={() => handleGenerate(tese)}
+                                    disabled={isGenerating}
+                                    className="px-4 py-2 border border-indigo-500 text-indigo-600 text-sm font-medium rounded-md hover:bg-indigo-50 disabled:bg-gray-200 disabled:text-gray-500 disabled:border-gray-300 transition-colors"
+                                >
+                                    {tese.title}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    {(isGenerating || generatedText) && (
+                        <div className="bg-white p-6 rounded-lg shadow-md">
+                             <h3 className="text-xl font-semibold text-gray-700 mb-4">3. Argumentação Gerada pela IA</h3>
+                             {isGenerating 
+                                ? <p className="text-indigo-700">Gerando argumentação para a tese: "{activeThesis}"... Por favor, aguarde.</p> 
+                                : <div className="bg-gray-50 p-4 rounded-md border">
+                                    <h4 className="font-bold text-gray-800 mb-2">{activeThesis}</h4>
+                                    <GeminiResponseRenderer responseText={generatedText} />
+                                  </div>
+                              }
+                        </div>
+                    )}
+                </div>
+            );
+        };
+        
+        const RiskMatrix = ({ risks }) => {
+            const probabilityLevels = { 'Baixa': 1, 'Média': 2, 'Alta': 3 };
+            const impactLevels = { 'Baixo': 1, 'Médio': 2, 'Alto': 3 };
+            const probabilityColors = { 'Baixa': 'bg-green-500', 'Média': 'bg-yellow-500', 'Alta': 'bg-red-500'};
+            
+            return (
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-3">Matriz de Probabilidade e Impacto</h4>
+                  <div className="grid grid-cols-4 gap-1 text-center text-xs font-medium">
+                      <div className="p-2"></div>
+                      <div className="p-2 bg-gray-200 rounded-t-md">Baixo</div>
+                      <div className="p-2 bg-gray-200">Médio</div>
+                      <div className="p-2 bg-gray-200 rounded-t-md">Alto</div>
+                      
+                      <div className="p-2 bg-gray-200 rounded-l-md">Alta</div>
+                      <div className="relative bg-yellow-200 p-2 h-16">{risks.map((r,i) => probabilityLevels[r.probability] === 3 && impactLevels[r.impact] === 1 && <div key={i} title={r.type} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${probabilityColors[r.probability]}`}></div>)}</div>
+                      <div className="relative bg-red-200 p-2 h-16">{risks.map((r,i) => probabilityLevels[r.probability] === 3 && impactLevels[r.impact] === 2 && <div key={i} title={r.type} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${probabilityColors[r.probability]}`}></div>)}</div>
+                      <div className="relative bg-red-300 p-2 h-16 rounded-tr-md">{risks.map((r,i) => probabilityLevels[r.probability] === 3 && impactLevels[r.impact] === 3 && <div key={i} title={r.type} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${probabilityColors[r.probability]}`}></div>)}</div>
+                      
+                      <div className="p-2 bg-gray-200 rounded-l-md">Média</div>
+                      <div className="relative bg-green-200 p-2 h-16">{risks.map((r,i) => probabilityLevels[r.probability] === 2 && impactLevels[r.impact] === 1 && <div key={i} title={r.type} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${probabilityColors[r.probability]}`}></div>)}</div>
+                      <div className="relative bg-yellow-200 p-2 h-16">{risks.map((r,i) => probabilityLevels[r.probability] === 2 && impactLevels[r.impact] === 2 && <div key={i} title={r.type} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${probabilityColors[r.probability]}`}></div>)}</div>
+                      <div className="relative bg-red-200 p-2 h-16 rounded-br-md">{risks.map((r,i) => probabilityLevels[r.probability] === 2 && impactLevels[r.impact] === 3 && <div key={i} title={r.type} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${probabilityColors[r.probability]}`}></div>)}</div>
+                      
+                      <div className="p-2 bg-gray-200 rounded-bl-md">Baixa</div>
+                      <div className="relative bg-green-300 p-2 h-16">{risks.map((r,i) => probabilityLevels[r.probability] === 1 && impactLevels[r.impact] === 1 && <div key={i} title={r.type} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${probabilityColors[r.probability]}`}></div>)}</div>
+                      <div className="relative bg-green-200 p-2 h-16">{risks.map((r,i) => probabilityLevels[r.probability] === 1 && impactLevels[r.impact] === 2 && <div key={i} title={r.type} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${probabilityColors[r.probability]}`}></div>)}</div>
+                      <div className="relative bg-yellow-200 p-2 h-16 rounded-br-md">{risks.map((r,i) => probabilityLevels[r.probability] === 1 && impactLevels[r.impact] === 3 && <div key={i} title={r.type} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${probabilityColors[r.probability]}`}></div>)}</div>
+                  </div>
+                </div>
+            )
+        };
+        
+        const GestaoDeRiscosModule = () => {
+            const [expandedCaseId, setExpandedCaseId] = React.useState(null);
+
+            const toggleCase = (caseId) => {
+                setExpandedCaseId(expandedCaseId === caseId ? null : caseId);
+            };
+
+            const getRiskColor = (level) => {
+                 switch (level) {
+                    case 'Alto': return 'border-red-500';
+                    case 'Média': return 'border-yellow-400';
+                    case 'Baixa': return 'border-green-500';
+                    default: return 'border-gray-300';
+                }
+            };
+            
+            return (
+                <div>
+                    <h2 className="text-3xl font-semibold text-gray-800 mb-6">Gestão de Riscos Jurídicos</h2>
+                    <p className="text-gray-600 mb-6">Análise detalhada dos riscos jurídicos associados a cada caso, com planos de mitigação e visualização de impacto.</p>
+                    <div className="space-y-4">
+                        {mockCasesData.map(c => {
+                            const analysis = riskAnalysisData[c.id.toString()];
+                            const isExpanded = expandedCaseId === c.id;
+                            if (!analysis) return null;
+                            
+                            return (
+                                <div key={c.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                                    <button onClick={() => toggleCase(c.id)} className="w-full text-left p-4 flex justify-between items-center hover:bg-gray-50 transition-colors">
+                                        <div>
+                                            <p className="font-semibold text-indigo-700">{c.caseNumber}</p>
+                                            <p className="text-sm text-gray-600">{c.subject}</p>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <span className="hidden sm:inline-flex items-center gap-2 text-sm text-gray-700">Riscos Identificados: <span className="font-bold">{analysis.risks.length}</span></span>
+                                            {isExpanded ? <ChevronUpIcon/> : <ChevronDownIcon/>}
+                                        </div>
+                                    </button>
+                                    {isExpanded && (
+                                        <div className="p-6 border-t border-gray-200 bg-gray-50">
+                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                                <div className="space-y-4">
+                                                    {analysis.risks.map((risk, index) => (
+                                                         <div key={index} className={`p-4 rounded-lg border-l-4 ${getRiskColor(risk.probability)} bg-white`}>
+                                                            <h4 className="font-bold text-gray-800">{risk.type} (Prob: {risk.probability} / Imp: {risk.impact})</h4>
+                                                            <p className="text-sm text-gray-600 mt-1">{risk.description}</p>
+                                                            <p className="text-sm text-green-700 mt-2 font-medium"><strong>Plano de Mitigação:</strong> {risk.mitigation}</p>
+                                                         </div>
+                                                    ))}
+                                                </div>
+                                                <div>
+                                                    <RiskMatrix risks={analysis.risks} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        };
+        
+        const SituacaoDoAdversoModule = () => {
+            return (
+                <div>
+                    <h2 className="text-3xl font-semibold text-gray-800 mb-6">Consulta da Situação do Adverso</h2>
+                    <div className="bg-white p-8 rounded-lg shadow-md text-center">
+                        <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+                            Verifique a situação cadastral de advogados de forma rápida e segura diretamente na fonte oficial da Ordem dos Advogados do Brasil.
+                            Clique no botão abaixo para ser redirecionado ao CNA - Cadastro Nacional dos Advogados.
+                        </p>
+                        <a 
+                            href="https://cna.oab.org.br/" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center gap-2 px-8 py-4 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-transform hover:scale-105"
+                        >
+                            Acessar CNA (OAB)
+                            <ExternalLinkIcon />
+                        </a>
+                    </div>
+                </div>
+            );
+        };
+
+        const CentralDeRelatoriosModule = () => {
+            const reportRef = React.useRef();
+
+            const generatePdf = () => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'pt', 'a4');
+                const logo = 'https://dev-caw.github.io/combate-litigancia-abusiva/img/caw.png';
+                
+                doc.addImage(logo, 'PNG', 40, 20, 100, 30);
+                doc.setFontSize(18);
+                doc.text("Relatório Consolidado de Riscos", 40, 80);
+                doc.setFontSize(10);
+                doc.setTextColor(100);
+                doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 40, 95);
+
+                let yPos = 130;
+                mockCasesData.forEach(c => {
+                    const analysis = riskAnalysisData[c.id];
+                    if (yPos > 700) {
+                        doc.addPage();
+                        yPos = 40;
+                    }
+                    if (analysis) {
+                        doc.setFontSize(12);
+                        doc.setTextColor(0);
+                        doc.setFont('helvetica', 'bold');
+                        doc.text(`Caso: ${c.caseNumber} - ${c.subject}`, 40, yPos);
+                        yPos += 20;
+
+                        analysis.risks.forEach(risk => {
+                            doc.setFontSize(10);
+                            doc.setFont('helvetica', 'bold');
+                            doc.text(`- Risco ${risk.type} (Prob: ${risk.probability} / Imp: ${risk.impact})`, 50, yPos);
+                            yPos += 15;
+                            doc.setFont('helvetica', 'normal');
+                            const descLines = doc.splitTextToSize(`Descrição: ${risk.description}`, 500);
+                            doc.text(descLines, 55, yPos);
+                            yPos += descLines.length * 12;
+                            const mitLines = doc.splitTextToSize(`Mitigação: ${risk.mitigation}`, 500);
+                            doc.text(mitLines, 55, yPos);
+                            yPos += mitLines.length * 12 + 10;
+                        });
+                    }
+                });
+
+                doc.save('relatorio_riscos_caw.pdf');
+            };
+
+            return (
+                <div>
+                    <h2 className="text-3xl font-semibold text-gray-800 mb-6">Central de Relatórios</h2>
+                    <div className="bg-white p-8 rounded-lg shadow-md">
+                        <h3 className="text-xl font-semibold text-gray-700 mb-4">Emissão de Relatórios</h3>
+                        <p className="text-gray-600 mb-6">Gere relatórios consolidados em formato PDF para análise e apresentação.</p>
+                        
+                        <div className="border rounded-lg p-4">
+                           <div className="flex justify-between items-center">
+                               <div>
+                                   <h4 className="font-semibold text-gray-800">Relatório de Análise de Riscos</h4>
+                                   <p className="text-sm text-gray-500">Gera um documento PDF com todos os riscos identificados nos casos ativos.</p>
+                               </div>
+                               <button 
+                                   onClick={generatePdf} 
+                                   className="flex items-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+                                >
+                                   <DownloadIcon/>
+                                   Baixar PDF
+                               </button>
+                           </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        
         const GenericModulePage = ({ moduleName }) => ( <div> <h2 className="text-3xl font-semibold text-gray-800 mb-6">{moduleName}</h2> <div className="bg-white p-8 rounded-lg shadow-md text-center"> <p className="text-gray-600">O conteúdo para o módulo <span className="font-semibold text-indigo-600">{moduleName}</span> será implementado aqui.</p> </div> </div> );
 
         const MainLayout = ({ onLogout }) => {
-          const [activeModule, setActiveModule] = React.useState('Dashboard');
-          const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
-          const [fraudAlert, setFraudAlert] = React.useState(false);
+            const [activeModule, setActiveModule] = React.useState('Dashboard');
+            const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+            const [fraudAlert, setFraudAlert] = React.useState(false);
 
-          const handleSelectModule = (moduleId) => {
-              setActiveModule(moduleId);
-              if (moduleId === 'DetecçãoDeFraudes') {
-                  setFraudAlert(false); 
-              }
-          };
-          
-          const renderModule = () => {
-            const module = modules.find(m => m.id === activeModule);
-            switch (activeModule) {
-              case 'Dashboard': return <Dashboard onSelectModule={handleSelectModule} />;
-              case 'Overview': return <OverviewModule />;
-              case 'AnáliseDeDados': return <AnaliseDeDadosIAModule onAnalysisComplete={setFraudAlert} />;
-              case 'DetecçãoDeFraudes': return <DeteccaoDeFraudesModule />;
-              case 'VerificaçãoDeDocs': return <VerificacaoDeDocsModule />;
-              case 'AutomaçãoDaDefesa': return <AutomacaoDaDefesaModule />;
-              case 'GestãoDeRiscos': return <GestaoDeRiscosModule />;
-              case 'SituaçãoDoAdverso': return <SituacaoDoAdversoModule />;
-              default: return <GenericModulePage moduleName={module?.name || "Módulo"} />;
-            }
-          };
+            const handleSelectModule = (moduleId) => {
+                setActiveModule(moduleId);
+                 if (moduleId === 'DetecçãoDeFraudes') {
+                    setFraudAlert(false); 
+                 }
+            };
+            
+            const renderModule = () => {
+                const module = modules.find(m => m.id === activeModule);
+                switch (activeModule) {
+                    case 'Dashboard': return <Dashboard onSelectModule={handleSelectModule} />;
+                    case 'Overview': return <OverviewModule />;
+                    case 'AnáliseDeDados': return <AnaliseDeDadosIAModule onAnalysisComplete={setFraudAlert} />;
+                    case 'DetecçãoDeFraudes': return <DeteccaoDeFraudesModule />;
+                    case 'VerificaçãoDeDocs': return <VerificacaoDeDocsModule />;
+                    case 'AutomaçãoDaDefesa': return <AutomacaoDaDefesaModule />;
+                    case 'GestãoDeRiscos': return <GestaoDeRiscosModule />;
+                    case 'SituaçãoDoAdverso': return <SituacaoDoAdversoModule />;
+                    case 'CentralDeRelatorios': return <CentralDeRelatoriosModule />;
+                    default: return <GenericModulePage moduleName={module?.name || "Módulo"} />;
+                }
+            };
 
-          return (
-            <div className="relative lg:flex h-screen bg-gray-100 font-sans">
-              <Sidebar 
-                activeModule={activeModule} 
-                onSelectModule={handleSelectModule} 
-                onLogout={onLogout} 
-                isSidebarOpen={isSidebarOpen} 
-                fraudAlert={fraudAlert}
-                closeSidebar={() => setIsSidebarOpen(false)}
-              />
-              <div className="flex-1 flex flex-col overflow-hidden">
-                <header className="flex justify-between lg:justify-end items-center p-4 bg-white border-b">
-                    <button onClick={() => setIsSidebarOpen(true)} className="text-gray-500 hover:text-gray-700 focus:outline-none lg:hidden">
-                        <MenuIcon />
-                    </button>
-                    <div className="flex items-center space-x-4">
-                        <span className="hidden sm:block text-gray-600">Bem-vindo</span>
-                        <div className="w-10 h-10 bg-indigo-200 rounded-full flex items-center justify-center">
-                           <UserIcon className="text-indigo-600" />
-                        </div>
+            return (
+                <div className="relative lg:flex h-screen bg-gray-100 font-sans">
+                    <Sidebar 
+                        activeModule={activeModule} 
+                        onSelectModule={handleSelectModule} 
+                        onLogout={onLogout} 
+                        isSidebarOpen={isSidebarOpen} 
+                        fraudAlert={fraudAlert}
+                        closeSidebar={() => setIsSidebarOpen(false)}
+                     />
+                    <div className="flex-1 flex flex-col overflow-hidden">
+                        <header className="flex justify-between lg:justify-end items-center p-4 bg-white border-b">
+                            <button onClick={() => setIsSidebarOpen(true)} className="text-gray-500 hover:text-gray-700 focus:outline-none lg:hidden">
+                                <MenuIcon />
+                            </button>
+                            <div className="flex items-center space-x-4">
+                                <span className="hidden sm:block text-gray-600">Bem-vindo</span>
+                                <div className="w-10 h-10 bg-indigo-200 rounded-full flex items-center justify-center">
+                                    <UserIcon className="text-indigo-600" />
+                                </div>
+                            </div>
+                        </header>
+                        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 sm:p-6">
+                            {renderModule()}
+                        </main>
                     </div>
-                </header>
-                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 sm:p-6">
-                  {renderModule()}
-                </main>
-              </div>
-            </div>
-          );
+                </div>
+            );
         };
 
         const container = document.getElementById('root');
