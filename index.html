@@ -8,9 +8,8 @@
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Bibliotecas para PDF e Mapa -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -20,6 +19,8 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         .gemini-response p, .gemini-response ul { margin-bottom: 0.75rem; }
         .gemini-response h3 { font-size: 1.25rem; font-weight: 600; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; margin-top: 1.5rem; margin-bottom: 1rem;}
+        .gemini-response-direct { white-space: pre-wrap; font-family: inherit; }
+        .gemini-response-direct strong { font-weight: 700; display: block; margin-bottom: 0.5rem; font-size: 1.1em; color: #1f2937;}
     </style>
 </head>
 <body class="bg-gray-100">
@@ -35,7 +36,7 @@
         const SparkleIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10.868 2.884c.321.64.321 1.415 0 2.055L9.43 6.493a1 1 0 101.414 1.414l1.555-1.554a2.945 2.945 0 014.163 4.163l-1.555 1.554a1 1 0 101.414 1.414l1.43-1.43a4.95 4.95 0 00-7.001-7.001L10.868 2.884zM2.94 15.05a4.95 4.95 0 007.001 7.001l1.43-1.43a1 1 0 00-1.414-1.414l-1.555 1.554a2.945 2.945 0 01-4.163-4.163l1.555-1.554a1 1 0 00-1.414-1.414l-1.43 1.43z" clipRule="evenodd" /></svg> );
         const SearchIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg> );
         const UploadIcon = () => ( <svg className="w-8 h-8" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M16.88 9.1A4 4 0 0 1 16 17H5a5 5 0 0 1-1-9.9V7a3 3 0 0 1 4.52-2.59A4.98 4.98 0 0 1 17 8c0 .38-.04.74-.12 1.1zM11 11h3l-4 4-4-4h3V3h2v8z" /></svg> );
-        const LocationMarkerIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> );
+        const DocumentTextIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 1a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1V6a1 1 0 00-1-1H6z" clipRule="evenodd" /></svg>);
         const ChevronDownIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg> );
         const ChevronUpIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>);
         const ExternalLinkIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg> );
@@ -93,19 +94,19 @@
             const [password, setPassword] = React.useState('senha123');
             const [error, setError] = React.useState('');
             const handleLogin = (e) => { e.preventDefault(); if (email && password) { onLogin(); } else { setError('Por favor, preencha todos os campos.'); } };
-            return ( <div className="flex items-center justify-center min-h-screen bg-gray-100 font-sans"> <div className="w-full max-w-md p-4 md:p-8 space-y-6 bg-white rounded-lg shadow-xl"> <div className="text-center"><img src="https://dev-caw.github.io/combate-litigancia-abusiva/img/topo.png" /></div><form className="mt-8 space-y-6" onSubmit={handleLogin}> <input id="email-address" name="email" type="email" required className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Endereço de e-mail" value={email} onChange={(e) => setEmail(e.target.value)} /> <input id="password" name="password" type="password" required className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Senha" value={password} onChange={(e) => setPassword(e.target.value)} /> {error && <p className="text-red-500 text-xs text-center">{error}</p>} <div className="text-sm"> <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500"> Esqueceu sua senha? </a> </div> <button type="submit" className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"> <span className="absolute left-0 inset-y-0 flex items-center pl-3"> <LockClosedIcon className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" /> </span> Entrar </button> </form> </div> </div> );
+            return ( <div className="flex items-center justify-center min-h-screen bg-gray-100 font-sans"> <div className="w-full max-w-md p-4 md:p-8 space-y-6 bg-white rounded-lg shadow-xl"> <div className="text-center"><img src="https://dev-caw.github.io/combate-litigancia-abusiva/img/topo.png" alt="Logotipo CAW" /></div><form className="mt-8 space-y-6" onSubmit={handleLogin}> <input id="email-address" name="email" type="email" required className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Endereço de e-mail" value={email} onChange={(e) => setEmail(e.target.value)} /> <input id="password" name="password" type="password" required className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Senha" value={password} onChange={(e) => setPassword(e.target.value)} /> {error && <p className="text-red-500 text-xs text-center">{error}</p>} <div className="text-sm"> <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500"> Esqueceu sua senha? </a> </div> <button type="submit" className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"> <span className="absolute left-0 inset-y-0 flex items-center pl-3"> <LockClosedIcon className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" /> </span> Entrar </button> </form> </div> </div> );
         };
 
         const Sidebar = ({ activeModule, onSelectModule, onLogout, isSidebarOpen, fraudAlert, closeSidebar }) => {
             return (
                 <aside className={`bg-gray-800 text-gray-100 flex flex-col fixed lg:static inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 w-64`}>
                     <div className="flex items-center justify-between h-20 border-b border-gray-700 px-4">
-                        <img src="https://dev-caw.github.io/combate-litigancia-abusiva/img/logo-white.png" alt="logo-white" style={{ padding: '40px' }} />
+                        <img src="https://dev-caw.github.io/combate-litigancia-abusiva/img/logo-white.png" alt="logotipo-branco" style={{ padding: '40px' }} />
                         <button onClick={closeSidebar} className="lg:hidden text-gray-400 hover:text-white">
                             <CloseIcon />
                         </button>
                     </div>
-                    <nav className="flex-1 px-2 py-4 space-y-2">
+                    <nav className="flex-1 px-2 py-4 space-y-2 overflow-y-auto">
                         {modules.map((module) => {
                             const isFraudModule = module.id === 'DetecçãoDeFraudes';
                             const isActive = activeModule === module.id;
@@ -116,7 +117,7 @@
                                  customClass = 'bg-red-600 animate-pulse';
                              }
                             return (
-                                <a key={module.id} href="#" onClick={(e) => { e.preventDefault(); onSelectModule(module.id); closeSidebar(); }} className={`flex items-center p-2 text-base font-normal rounded-lg transition-colors ${customClass}`}>
+                                <a key={module.id} href="#" onClick={(e) => { e.preventDefault(); onSelectModule(module.id); if(closeSidebar) closeSidebar(); }} className={`flex items-center p-2 text-base font-normal rounded-lg transition-colors ${customClass}`}>
                                     <module.icon />
                                     <span className="ml-3">{module.name}</span>
                                 </a>
@@ -137,7 +138,7 @@
 
         const Dashboard = ({ onSelectModule }) => (
             <div>
-                <img src="https://dev-caw.github.io/combate-litigancia-abusiva/img/combate.png" alt="logo-white" style={{ padding: '20px 25%' }} />
+                <img src="https://dev-caw.github.io/combate-litigancia-abusiva/img/combate.png" alt="Banner Combate à Litigância Abusiva" style={{ padding: '20px 25%' }} />
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {modules.filter(m => m.id !== 'Dashboard').map((module) => (
                         <div key={module.id} className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer flex flex-col items-center text-center" onClick={() => onSelectModule(module.id)}>
@@ -150,158 +151,165 @@
         );
 
         const OverviewModule = () => {
-                const [selectedCase, setSelectedCase] = React.useState(null);
-                const totalValue = mockCasesData.reduce((acc, c) => acc + c.value, 0);
-                const highRiskCases = mockCasesData.filter(c => c.riskLevel === 'Alto' || c.riskLevel === 'Crítico').length;
-                const getRiskColor = (level) => {
-                    switch (level) {
-                        case 'Crítico': return 'bg-red-200 text-red-800';
-                        case 'Alto': return 'bg-yellow-200 text-yellow-800';
-                        case 'Médio': return 'bg-blue-200 text-blue-800';
-                        case 'Baixo': return 'bg-green-200 text-green-800';
-                        default: return 'bg-gray-200 text-gray-800';
-                    }
-                };
-                return (
-                    <div>
-                        <h2 className="text-3xl font-semibold text-gray-800 mb-6">Overview dos Casos</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                            <div className="bg-white p-5 rounded-lg shadow-md"><h4 className="text-gray-500 text-sm font-medium">TOTAL DE CASOS</h4><p className="text-3xl font-bold text-gray-800">{mockCasesData.length}</p></div>
-                            <div className="bg-white p-5 rounded-lg shadow-md"><h4 className="text-gray-500 text-sm font-medium">RISCO ALTO/CRÍTICO</h4><p className="text-3xl font-bold text-red-600">{highRiskCases}</p></div>
-                            <div className="bg-white p-5 rounded-lg shadow-md"><h4 className="text-gray-500 text-sm font-medium">VALOR TOTAL DAS CAUSAS</h4><p className="text-3xl font-bold text-gray-800">{totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
-                        </div>
-                        <div className="bg-white rounded-lg shadow-md overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr><th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nº do Processo</th><th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parte Adversa</th><th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th><th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nível de Risco</th></tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {mockCasesData.map((c) => (<tr key={c.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedCase(c)}><td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{c.caseNumber}</td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{c.parties.defendant}</td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{c.status}</td><td className="px-6 py-4 whitespace-nowrap text-sm"><span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getRiskColor(c.riskLevel)}`}>{c.riskLevel}</span></td></tr>))}
-                                </tbody>
-                            </table>
-                        </div>
-                        {selectedCase && (<div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center" onClick={() => setSelectedCase(null)}><div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto m-4" onClick={e => e.stopPropagation()}><div className="p-6"><div className="flex justify-between items-start"><div><h3 className="text-xl md:text-2xl font-bold text-gray-900">{selectedCase.subject}</h3><p className="text-sm text-gray-500 mt-1">{selectedCase.caseNumber}</p></div><button onClick={() => setSelectedCase(null)} className="text-gray-400 hover:text-gray-600"><CloseIcon/></button></div><div className="mt-4 border-t pt-4"><h4 className="font-semibold text-gray-800 mb-3">Resumo do Caso</h4><p className="text-gray-700 text-sm mb-4">{selectedCase.details.summary}</p><h4 className="font-semibold text-gray-800 mb-3">Indicadores de Abuso Identificados</h4><ul className="list-disc list-inside space-y-2 mb-4">{selectedCase.details.indicators.map((indicator, index) => (<li key={index} className="text-sm text-yellow-800 bg-yellow-50 p-2 rounded-md">{indicator}</li>))}</ul><h4 className="font-semibold text-gray-800 mb-3">Documentos Relevantes</h4><div className="flex flex-wrap gap-2">{selectedCase.details.documents.map((doc, index) => (<span key={index} className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">{doc}</span>))}</div></div></div></div></div>)}
-                    </div>
-                );
-        };
-        
-        const GeminiResponseRenderer = ({ responseText }) => {
-            if (!responseText) return null;
-            // A simple approach: split by newlines and wrap in <p>. 
-            // A more robust solution would use a Markdown parser.
-            const paragraphs = responseText.split('\n').filter(p => p.trim() !== '');
+            const [selectedCase, setSelectedCase] = React.useState(null);
+            const totalValue = mockCasesData.reduce((acc, c) => acc + c.value, 0);
+            const highRiskCases = mockCasesData.filter(c => c.riskLevel === 'Alto' || c.riskLevel === 'Crítico').length;
+            const getRiskColor = (level) => {
+                switch (level) {
+                    case 'Crítico': return 'bg-red-200 text-red-800';
+                    case 'Alto': return 'bg-yellow-200 text-yellow-800';
+                    case 'Médio': return 'bg-blue-200 text-blue-800';
+                    case 'Baixo': return 'bg-green-200 text-green-800';
+                    default: return 'bg-gray-200 text-gray-800';
+                }
+            };
             return (
-                <div className="space-y-4 text-gray-700 gemini-response" dangerouslySetInnerHTML={{ __html: responseText.replace(/\n/g, '<br />') }}>
+                <div>
+                    <h2 className="text-3xl font-semibold text-gray-800 mb-6">Overview dos Casos</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div className="bg-white p-5 rounded-lg shadow-md"><h4 className="text-gray-500 text-sm font-medium">TOTAL DE CASOS</h4><p className="text-3xl font-bold text-gray-800">{mockCasesData.length}</p></div>
+                        <div className="bg-white p-5 rounded-lg shadow-md"><h4 className="text-gray-500 text-sm font-medium">RISCO ALTO/CRÍTICO</h4><p className="text-3xl font-bold text-red-600">{highRiskCases}</p></div>
+                        <div className="bg-white p-5 rounded-lg shadow-md"><h4 className="text-gray-500 text-sm font-medium">VALOR TOTAL DAS CAUSAS</h4><p className="text-3xl font-bold text-gray-800">{totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+                    </div>
+                    <div className="bg-white rounded-lg shadow-md overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr><th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nº do Processo</th><th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parte Adversa</th><th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th><th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nível de Risco</th></tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {mockCasesData.map((c) => (<tr key={c.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedCase(c)}><td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{c.caseNumber}</td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{c.parties.defendant}</td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{c.status}</td><td className="px-6 py-4 whitespace-nowrap text-sm"><span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getRiskColor(c.riskLevel)}`}>{c.riskLevel}</span></td></tr>))}
+                            </tbody>
+                        </table>
+                    </div>
+                    {selectedCase && (<div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center" onClick={() => setSelectedCase(null)}><div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto m-4" onClick={e => e.stopPropagation()}><div className="p-6"><div className="flex justify-between items-start"><div><h3 className="text-xl md:text-2xl font-bold text-gray-900">{selectedCase.subject}</h3><p className="text-sm text-gray-500 mt-1">{selectedCase.caseNumber}</p></div><button onClick={() => setSelectedCase(null)} className="text-gray-400 hover:text-gray-600"><CloseIcon/></button></div><div className="mt-4 border-t pt-4"><h4 className="font-semibold text-gray-800 mb-3">Resumo do Caso</h4><p className="text-gray-700 text-sm mb-4">{selectedCase.details.summary}</p><h4 className="font-semibold text-gray-800 mb-3">Indicadores de Abuso Identificados</h4><ul className="list-disc list-inside space-y-2 mb-4">{selectedCase.details.indicators.map((indicator, index) => (<li key={index} className="text-sm text-yellow-800 bg-yellow-50 p-2 rounded-md">{indicator}</li>))}</ul><h4 className="font-semibold text-gray-800 mb-3">Documentos Relevantes</h4><div className="flex flex-wrap gap-2">{selectedCase.details.documents.map((doc, index) => (<span key={index} className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">{doc}</span>))}</div></div></div></div></div>)}
                 </div>
             );
         };
+        
+        const GeminiResponseRenderer = ({ responseText, isDirect = false }) => {
+            if (!responseText) return null;
+            let processedText = responseText;
+            if (isDirect) {
+                // Remove Markdown asterisks and replace with strong tags for bolding
+                processedText = responseText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            } else {
+                 // For non-direct, handle more markdown cases
+                processedText = responseText
+                    .replace(/### (.*?)\n/g, '<h3>$1</h3>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/- (.*?)\n/g, '<ul class="list-disc list-inside"><li class="text-gray-700">$1</li></ul>')
+            }
+            // General cleanup for newlines
+            processedText = processedText.replace(/\n/g, '<br />').replace(/(<br\s*\/?>\s*){3,}/g, '<br /><br />');
+
+            return <div className={`space-y-4 text-gray-700 ${isDirect ? 'gemini-response-direct' : 'gemini-response'}`} dangerouslySetInnerHTML={{ __html: processedText }}></div>;
+        };
 
         const AnaliseDeDadosIAModule = ({ onAnalysisComplete }) => {
-                const [caseText, setCaseText] = React.useState('Reclamante alega horas extras não pagas, mas a empresa possui um sistema de ponto biométrico que foi verificado em inspeção judicial e considerado regular. O advogado do reclamante possui outras 50 ações idênticas contra a mesma empresa, com as mesmas alegações. Há risco de fraude e litigância predatória.');
-                const [isAnalyzing, setIsAnalyzing] = React.useState(false);
-                const [analysisResult, setAnalysisResult] = React.useState('');
-                
-                const handleAnalyzeWithAI = async () => { 
-                    if (!caseText.trim()) return; 
-                    setIsAnalyzing(true); 
-                    setAnalysisResult(''); 
-                    let text = ''; 
-                    const prompt = `Aja como um advogado sênior e estrategista. Analise o seguinte relato de um caso jurídico. Forneça uma resposta estruturada usando a formatação "### Título" para os cabeçalhos e "- " para listas. A resposta deve conter EXATAMENTE os seguintes cabeçalhos:\n### Resumo do Caso\n### Pontos de Atenção e Riscos\n### Sugestão de Estratégia\n\nTexto do caso para análise:\n---\n${caseText}\n---`; 
-                    try { 
-                        const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] }; 
-                        const apiKey = ""; 
-                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`; 
-                        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); 
-                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); 
-                        const result = await response.json(); 
-                        text = result.candidates?.[0]?.content?.parts?.[0]?.text || ''; 
-                        if (text) { 
-                            setAnalysisResult(text.replace(/### (.*?)\n/g, '<h3>$1</h3>').replace(/- (.*?)\n/g, '<ul><li class="flex"><span class="mr-2 text-indigo-500">&bull;</span><span>$1</span></li></ul>').replace(/\n/g, '<p>')); 
-                        } else { 
-                            setAnalysisResult("Erro: A resposta da IA estava em um formato inesperado."); 
-                        } 
-                    } catch (error) { 
-                        console.error("Erro ao chamar a API do Gemini:", error); 
-                        setAnalysisResult("Ocorreu um erro ao gerar a análise. Tente novamente."); 
-                    } finally { 
-                        setIsAnalyzing(false); 
-                        if (text && (text.toLowerCase().includes('risco') || text.toLowerCase().includes('fraude') || text.toLowerCase().includes('abusiva') || text.toLowerCase().includes('predatória'))) { 
-                            onAnalysisComplete(true); 
-                        } 
+            const [caseText, setCaseText] = React.useState('Reclamante alega horas extras não pagas, mas a empresa possui um sistema de ponto biométrico que foi verificado em inspeção judicial e considerado regular. O advogado do reclamante possui outras 50 ações idênticas contra a mesma empresa, com as mesmas alegações. Há risco de fraude e litigância predatória.');
+            const [isAnalyzing, setIsAnalyzing] = React.useState(false);
+            const [analysisResult, setAnalysisResult] = React.useState('');
+            
+            const handleAnalyzeWithAI = async () => { 
+                if (!caseText.trim()) return; 
+                setIsAnalyzing(true); 
+                setAnalysisResult(''); 
+                let text = ''; 
+                const prompt = `Aja como um advogado sênior e estrategista. Analise o seguinte relato de um caso jurídico. Forneça uma resposta estruturada usando a formatação "### Título" para os cabeçalhos e "- " para listas. A resposta deve conter EXATAMENTE os seguintes cabeçalhos:\n### Resumo do Caso\n### Pontos de Atenção e Riscos\n### Sugestão de Estratégia\n\nTexto do caso para análise:\n---\n${caseText}\n---`; 
+                try { 
+                    const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] }; 
+                    const apiKey = ""; 
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`; 
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); 
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); 
+                    const result = await response.json(); 
+                    text = result.candidates?.[0]?.content?.parts?.[0]?.text || ''; 
+                    if (text) { 
+                        setAnalysisResult(text); 
+                    } else { 
+                        setAnalysisResult("Erro: A resposta da IA estava em um formato inesperado."); 
                     } 
-                };
+                } catch (error) { 
+                    console.error("Erro ao chamar a API do Gemini:", error); 
+                    setAnalysisResult("Ocorreu um erro ao gerar a análise. Tente novamente."); 
+                } finally { 
+                    setIsAnalyzing(false); 
+                    if (text && (text.toLowerCase().includes('risco') || text.toLowerCase().includes('fraude') || text.toLowerCase().includes('abusiva') || text.toLowerCase().includes('predatória'))) { 
+                        onAnalysisComplete(true); 
+                    } 
+                } 
+            };
 
-                return (<div><h2 className="text-3xl font-semibold text-gray-800 mb-2">Análise de Dados e Estratégia com IA</h2><p className="text-gray-600 mb-6">Descreva os fatos de um caso e a IA irá gerar um resumo, identificar riscos e sugerir estratégias.</p><div className="bg-white p-6 rounded-lg shadow-md mb-6"><h3 className="text-xl font-semibold text-gray-700 mb-4">1. Descreva o Caso</h3><textarea value={caseText} onChange={(e) => setCaseText(e.target.value)} placeholder="Cole ou descreva aqui os fatos, petições ou documentos relevantes para a análise..." className="w-full h-40 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" /> <button onClick={handleAnalyzeWithAI} disabled={!caseText.trim() || isAnalyzing} className="mt-4 w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300"><SparkleIcon /> {isAnalyzing ? 'Analisando...' : 'Gerar Resumo e Análise Estratégica'}</button></div>{(isAnalyzing || analysisResult) && (<div className="bg-white p-6 rounded-lg shadow-md"><h3 className="text-xl font-semibold text-gray-700 mb-4">2. Análise Estratégica da IA</h3>{isAnalyzing && <p className="text-indigo-700">Aguarde, a IA está processando sua solicitação...</p>}{analysisResult && <GeminiResponseRenderer responseText={analysisResult} />}</div>)}</div>);
+            return (<div><h2 className="text-3xl font-semibold text-gray-800 mb-2">Análise de Dados e Estratégia com IA</h2><p className="text-gray-600 mb-6">Descreva os fatos de um caso e a IA irá gerar um resumo, identificar riscos e sugerir estratégias.</p><div className="bg-white p-6 rounded-lg shadow-md mb-6"><h3 className="text-xl font-semibold text-gray-700 mb-4">1. Descreva o Caso</h3><textarea value={caseText} onChange={(e) => setCaseText(e.target.value)} placeholder="Cole ou descreva aqui os fatos, petições ou documentos relevantes para a análise..." className="w-full h-40 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" /> <button onClick={handleAnalyzeWithAI} disabled={!caseText.trim() || isAnalyzing} className="mt-4 w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300"><SparkleIcon /> {isAnalyzing ? 'Analisando...' : 'Gerar Resumo e Análise Estratégica'}</button></div>{(isAnalyzing || analysisResult) && (<div className="bg-white p-6 rounded-lg shadow-md"><h3 className="text-xl font-semibold text-gray-700 mb-4">2. Análise Estratégica da IA</h3>{isAnalyzing ? <p className="text-indigo-700">Aguarde, a IA está processando sua solicitação...</p> : <GeminiResponseRenderer responseText={analysisResult} />}</div>)}</div>);
         };
         
         const DeteccaoDeFraudesModule = () => {
-                const [isScanning, setIsScanning] = React.useState(false);
-                const [scanResults, setScanResults] = React.useState([]);
+            const [isScanning, setIsScanning] = React.useState(false);
+            const [scanResults, setScanResults] = React.useState([]);
 
-                const handleScan = () => {
-                    setIsScanning(true);
-                    setScanResults([]);
-                    setTimeout(() => {
-                        const highRiskCases = mockCasesData.filter(c => c.riskLevel === 'Alto' || c.riskLevel === 'Crítico');
-                        const results = {};
-                         
-                        highRiskCases.forEach(c => {
-                            if (c.details.indicators.some(ind => ind.includes("Concentração de grande volume") || ind.includes("50 ações idênticas"))) {
-                                if(!results['l']) results['l'] = { indicator: cnjIndicators.find(i => i.id === 'l'), cases: []};
-                                results['l'].cases.push(c);
-                            }
-                            if (c.details.indicators.some(ind => ind.includes("petições genéricas") || ind.includes("causas de pedir idênticas"))) {
-                                if(!results['g']) results['g'] = { indicator: cnjIndicators.find(i => i.id === 'g'), cases: []};
-                                results['g'].cases.push(c);
-                            }
-                            if (c.details.indicators.some(ind => ind.includes("assédio processual"))) {
-                                 if(!results['m']) results['m'] = { indicator: cnjIndicators.find(i => i.id === 'm'), cases: []};
-                                 results['m'].cases.push(c);
-                            }
-                        });
-                         
-                        setScanResults(Object.values(results));
-                        setIsScanning(false);
-                    }, 2500);
-                };
+            const handleScan = () => {
+                setIsScanning(true);
+                setScanResults([]);
+                setTimeout(() => {
+                    const highRiskCases = mockCasesData.filter(c => c.riskLevel === 'Alto' || c.riskLevel === 'Crítico');
+                    const results = {};
+                     
+                    highRiskCases.forEach(c => {
+                        if (c.details.indicators.some(ind => ind.includes("Concentração de grande volume") || ind.includes("50 ações idênticas"))) {
+                            if(!results['l']) results['l'] = { indicator: cnjIndicators.find(i => i.id === 'l'), cases: []};
+                            results['l'].cases.push(c);
+                        }
+                        if (c.details.indicators.some(ind => ind.includes("petições genéricas") || ind.includes("causas de pedir idênticas"))) {
+                            if(!results['g']) results['g'] = { indicator: cnjIndicators.find(i => i.id === 'g'), cases: []};
+                            results['g'].cases.push(c);
+                        }
+                        if (c.details.indicators.some(ind => ind.includes("assédio processual"))) {
+                             if(!results['m']) results['m'] = { indicator: cnjIndicators.find(i => i.id === 'm'), cases: []};
+                             results['m'].cases.push(c);
+                        }
+                    });
+                     
+                    setScanResults(Object.values(results));
+                    setIsScanning(false);
+                }, 2500);
+            };
 
-                return (
-                    <div>
-                        <h2 className="text-3xl font-semibold text-gray-800 mb-2">Detecção de Fraudes e Litigância Abusiva</h2>
-                        <p className="text-gray-600 mb-6">Inicie uma varredura para identificar padrões de conduta abusiva nos casos ativos, com base na Recomendação 159/2024 do CNJ.</p>
-                        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-                            <button onClick={handleScan} disabled={isScanning} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700 disabled:bg-red-300 transition-colors">
-                                <SearchIcon/>
-                                {isScanning ? 'Varrendo Casos...' : 'Iniciar Varredura de Fraudes'}
-                            </button>
-                        </div>
-                        {isScanning && ( <div className="text-center p-6 bg-white rounded-lg shadow-md"> <p className="text-red-700 font-semibold animate-pulse">Analisando base de dados em busca de padrões...</p> </div> )}
-                        {!isScanning && scanResults.length === 0 && ( <div className="text-center p-6 bg-white rounded-lg shadow-md"> <p className="text-gray-500">Nenhum padrão de fraude detectado na última varredura ou a varredura não foi iniciada.</p> </div> )}
-                        {scanResults.length > 0 && (
-                            <div className="space-y-6">
-                                <h3 className="text-2xl font-semibold text-gray-800">Resultados da Varredura</h3>
-                                {scanResults.map(({indicator, cases}) => (
-                                     <div key={indicator.id} className="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500">
-                                         <h4 className="text-xl font-bold text-red-700">{indicator.title}</h4>
-                                         <p className="text-gray-600 mt-1">{indicator.description}</p>
-                                         <p className="text-xs text-gray-500 mt-1">Enquadramento: {indicator.cpc}</p>
-                                         <div className="mt-4">
-                                             <h5 className="font-semibold text-gray-800 mb-2">Casos Relacionados ({cases.length}):</h5>
-                                             <div className="flex flex-wrap gap-2">
-                                                {cases.map(c => ( <span key={c.id} className="px-3 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800">{c.caseNumber}</span>))}
-                                            </div>
-                                         </div>
-                                     </div>
-                                ))}
-                            </div>
-                         )}
+            return (
+                <div>
+                    <h2 className="text-3xl font-semibold text-gray-800 mb-2">Detecção de Fraudes e Litigância Abusiva</h2>
+                    <p className="text-gray-600 mb-6">Inicie uma varredura para identificar padrões de conduta abusiva nos casos ativos, com base na Recomendação 159/2024 do CNJ.</p>
+                    <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+                        <button onClick={handleScan} disabled={isScanning} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700 disabled:bg-red-300 transition-colors">
+                            <SearchIcon/>
+                            {isScanning ? 'Varrendo Casos...' : 'Iniciar Varredura de Fraudes'}
+                        </button>
                     </div>
-                );
+                    {isScanning && ( <div className="text-center p-6 bg-white rounded-lg shadow-md"> <p className="text-red-700 font-semibold animate-pulse">Analisando base de dados em busca de padrões...</p> </div> )}
+                    {!isScanning && scanResults.length === 0 && ( <div className="text-center p-6 bg-white rounded-lg shadow-md"> <p className="text-gray-500">Nenhum padrão de fraude detectado ou a varredura não foi iniciada.</p> </div> )}
+                    {scanResults.length > 0 && (
+                        <div className="space-y-6">
+                            <h3 className="text-2xl font-semibold text-gray-800">Resultados da Varredura</h3>
+                            {scanResults.map(({indicator, cases}) => (
+                                 <div key={indicator.id} className="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500">
+                                     <h4 className="text-xl font-bold text-red-700">{indicator.title}</h4>
+                                     <p className="text-gray-600 mt-1">{indicator.description}</p>
+                                     <p className="text-xs text-gray-500 mt-1">Enquadramento: {indicator.cpc}</p>
+                                     <div className="mt-4">
+                                         <h5 className="font-semibold text-gray-800 mb-2">Casos Relacionados ({cases.length}):</h5>
+                                         <div className="flex flex-wrap gap-2">
+                                            {cases.map(c => ( <span key={c.id} className="px-3 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800">{c.caseNumber}</span>))}
+                                        </div>
+                                     </div>
+                                 </div>
+                            ))}
+                        </div>
+                     )}
+                </div>
+            );
         };
         
-        // --- NOVOS MÓDULOS ---
+        // --- MÓDULOS ATUALIZADOS ---
 
-        // Função auxiliar para converter arquivo para base64
         const fileToBase64 = (file) => new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -309,18 +317,36 @@
             reader.onerror = error => reject(error);
         });
 
+        const FileUploadComponent = ({ onFileChange, file }) => {
+            const fileInputRef = React.useRef();
+            return (
+                 <div 
+                    className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-indigo-500 bg-gray-50"
+                    onClick={() => fileInputRef.current.click()}
+                >
+                    <input type="file" accept="image/*,.pdf" ref={fileInputRef} onChange={onFileChange} className="hidden" />
+                    <UploadIcon className="mx-auto h-12 w-12 text-gray-400" />
+                    <p className="mt-2 text-sm text-gray-600">{file ? `Arquivo: ${file.name}` : "Clique para selecionar um arquivo"}</p>
+                    <p className="text-xs text-gray-500">PNG, JPG, GIF ou PDF até 10MB</p>
+                </div>
+            );
+        };
+        
         const AnaliseBoletoSubModule = () => {
             const [file, setFile] = React.useState(null);
             const [preview, setPreview] = React.useState(null);
             const [isAnalyzing, setIsAnalyzing] = React.useState(false);
             const [analysisResult, setAnalysisResult] = React.useState('');
-            const fileInputRef = React.useRef();
 
             const handleFileChange = (e) => {
                 const selectedFile = e.target.files[0];
                 if (selectedFile) {
                     setFile(selectedFile);
-                    setPreview(URL.createObjectURL(selectedFile));
+                     if(selectedFile.type.startsWith('image/')) {
+                       setPreview(URL.createObjectURL(selectedFile));
+                    } else {
+                       setPreview(null);
+                    }
                     setAnalysisResult('');
                 }
             };
@@ -331,33 +357,25 @@
                 setAnalysisResult('');
                 try {
                     const base64Image = await fileToBase64(file);
-                    const prompt = "Analise esta imagem de um boleto bancário brasileiro em busca de quaisquer sinais de fraude ou adulteração. Verifique o código de barras, a linha digitável, o logo do banco, informações do beneficiário e pagador, e a formatação geral. Forneça um parecer técnico detalhado em português, apontando cada possível inconsistência encontrada e um veredito final sobre a probabilidade de ser um boleto fraudulento.";
+                    const prompt = "Analise este documento em busca de sinais de fraude. Se for uma imagem de boleto bancário, verifique o código de barras, a linha digitável, o logo do banco, informações do beneficiário e pagador, e a formatação geral. Forneça um parecer técnico detalhado e objetivo, em português, apontando cada possível inconsistência encontrada e um veredito final sobre a probabilidade de fraude.";
                     
                     const payload = {
                         contents: [{
                             role: "user",
-                            parts: [
-                                { text: prompt },
-                                { inlineData: { mimeType: file.type, data: base64Image } }
-                            ]
+                            parts: [ { text: prompt }, { inlineData: { mimeType: file.type, data: base64Image } } ]
                         }]
                     };
                     const apiKey = "";
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                     
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                     
                     const result = await response.json();
-                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "Não foi possível analisar a imagem.";
+                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "Não foi possível analisar o documento.";
                     setAnalysisResult(text);
                 } catch (error) {
-                    console.error("Erro na análise do boleto:", error);
+                    console.error("Erro na análise do documento:", error);
                     setAnalysisResult("Ocorreu um erro ao tentar analisar o documento. Verifique o console para mais detalhes.");
                 } finally {
                     setIsAnalyzing(false);
@@ -366,16 +384,8 @@
 
             return (
                 <div className="space-y-6">
-                    <p className="text-gray-600">Faça o upload da imagem de um boleto. A IA do Gemini irá inspecionar o documento em busca de indícios de fraude e emitir um parecer técnico.</p>
-                    <div 
-                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-indigo-500 bg-gray-50"
-                        onClick={() => fileInputRef.current.click()}
-                    >
-                        <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
-                        <UploadIcon className="mx-auto h-12 w-12 text-gray-400" />
-                        <p className="mt-2 text-sm text-gray-600">{file ? `Arquivo selecionado: ${file.name}` : "Clique para selecionar um arquivo"}</p>
-                        <p className="text-xs text-gray-500">PNG, JPG, GIF até 10MB</p>
-                    </div>
+                    <p className="text-gray-600">Faça o upload da imagem de um boleto ou outro documento. A IA do Gemini irá inspecionar o arquivo em busca de indícios de fraude e emitir um parecer técnico objetivo.</p>
+                    <FileUploadComponent onFileChange={handleFileChange} file={file} />
                     {preview && (
                         <div className="mt-4">
                             <h4 className="font-semibold text-gray-700 mb-2">Pré-visualização:</h4>
@@ -384,7 +394,7 @@
                     )}
                     <button onClick={handleAnalyze} disabled={!file || isAnalyzing} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300">
                         <SparkleIcon />
-                        {isAnalyzing ? "Analisando Boleto..." : "Analisar com IA"}
+                        {isAnalyzing ? "Analisando Documento..." : "Analisar com IA"}
                     </button>
                     {(isAnalyzing || analysisResult) && (
                         <div className="bg-white p-6 rounded-lg shadow-md mt-6">
@@ -400,14 +410,10 @@
             const [file, setFile] = React.useState(null);
             const [isAnalyzing, setIsAnalyzing] = React.useState(false);
             const [analysisResult, setAnalysisResult] = React.useState('');
-            const fileInputRef = React.useRef();
 
             const handleFileChange = (e) => {
                 const selectedFile = e.target.files[0];
-                if (selectedFile) {
-                    setFile(selectedFile);
-                    setAnalysisResult('');
-                }
+                if (selectedFile) { setFile(selectedFile); setAnalysisResult(''); }
             };
             
             const handleAnalyze = async () => {
@@ -415,9 +421,7 @@
                 setIsAnalyzing(true);
                 setAnalysisResult('');
                 try {
-                    // Simulação
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                    const prompt = `Aja como um perito em assinaturas digitais. Foi feito o upload de um documento (procuração). A sua tarefa é gerar um laudo técnico simulado sobre a conformidade da assinatura digital com os padrões ICP-Brasil. O laudo deve ser estruturado com os seguintes tópicos em negrito: **Verificação do Certificado Digital**, **Validade da Cadeia de Confiança**, **Carimbo de Tempo (Timestamp)** e **Conclusão Pericial**. Mesmo sendo uma simulação, o texto deve ser técnico, verossímil e conclusivo sobre a validade (ou não) da assinatura.`;
+                    const prompt = `Aja como um perito em assinaturas digitais. Um documento foi enviado para análise. Gere um laudo técnico objetivo sobre a conformidade da assinatura digital contida no documento com os padrões ICP-Brasil. O laudo deve ser estruturado com os seguintes tópicos em negrito: **Verificação do Certificado Digital**, **Validade da Cadeia de Confiança**, **Carimbo de Tempo (Timestamp)** e **Conclusão Pericial Objetiva**. O texto deve ser técnico, verossímil e conclusivo sobre a validade (ou não) da assinatura, baseado nos padrões técnicos.`;
                     
                     const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
                     const apiKey = "";
@@ -430,8 +434,8 @@
                     const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "Não foi possível gerar o laudo.";
                     setAnalysisResult(text);
                 } catch (error) {
-                    console.error("Erro na validação simulada:", error);
-                    setAnalysisResult("Ocorreu um erro ao gerar o laudo simulado.");
+                    console.error("Erro na validação:", error);
+                    setAnalysisResult("Ocorreu um erro ao gerar o laudo.");
                 } finally {
                     setIsAnalyzing(false);
                 }
@@ -439,22 +443,15 @@
 
             return (
                 <div className="space-y-6">
-                    <p className="text-gray-600">Faça o upload de um documento (ex: procuração). A IA irá gerar um laudo **simulado** sobre a conformidade da assinatura digital com os padrões ICP-Brasil.</p>
-                     <div 
-                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-indigo-500 bg-gray-50"
-                        onClick={() => fileInputRef.current.click()}
-                    >
-                        <input type="file" accept=".pdf" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
-                        <UploadIcon className="mx-auto h-12 w-12 text-gray-400" />
-                        <p className="mt-2 text-sm text-gray-600">{file ? `Arquivo selecionado: ${file.name}` : "Clique para selecionar um arquivo PDF"}</p>
-                    </div>
+                    <p className="text-gray-600">Faça o upload de um documento (ex: procuração). A IA irá gerar um laudo objetivo sobre a conformidade da assinatura digital com os padrões ICP-Brasil.</p>
+                     <FileUploadComponent onFileChange={handleFileChange} file={file} />
                      <button onClick={handleAnalyze} disabled={!file || isAnalyzing} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300">
                         <SparkleIcon />
-                        {isAnalyzing ? "Verificando Assinatura..." : "Gerar Laudo Simulado"}
+                        {isAnalyzing ? "Verificando Assinatura..." : "Gerar Laudo Objetivo"}
                     </button>
                     {(isAnalyzing || analysisResult) && (
                         <div className="bg-white p-6 rounded-lg shadow-md mt-6">
-                            <h3 className="text-xl font-semibold text-gray-700 mb-4">Laudo de Verificação (Simulado)</h3>
+                            <h3 className="text-xl font-semibold text-gray-700 mb-4">Laudo de Verificação de Assinatura</h3>
                             {isAnalyzing ? <p className="text-indigo-700">Analisando... Por favor, aguarde.</p> : <GeminiResponseRenderer responseText={analysisResult} />}
                         </div>
                     )}
@@ -463,31 +460,66 @@
         };
         
         const GeolocalizacaoSubModule = () => {
-            const [locations, setLocations] = React.useState({ author: '', office: '', signature: '' });
+            const [files, setFiles] = React.useState({ residence: null, powerOfAttorney: null });
             const [isAnalyzing, setIsAnalyzing] = React.useState(false);
             const [analysisResult, setAnalysisResult] = React.useState('');
 
-            const handleInputChange = (e) => {
-                const { name, value } = e.target;
-                setLocations(prev => ({ ...prev, [name]: value }));
+            const handleFileChange = (e, fileType) => {
+                const selectedFile = e.target.files[0];
+                if (selectedFile) {
+                    setFiles(prev => ({ ...prev, [fileType]: selectedFile }));
+                    setAnalysisResult('');
+                }
             };
+            
+            const SingleFileUpload = ({label, file, onFileChange}) => {
+                const fileInputRef = React.useRef();
+                return (
+                     <div 
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-indigo-500 bg-gray-50"
+                        onClick={() => fileInputRef.current.click()}
+                    >
+                        <input type="file" accept="image/*,.pdf" ref={fileInputRef} onChange={onFileChange} className="hidden" />
+                        <UploadIcon className="mx-auto h-12 w-12 text-gray-400" />
+                        <p className="mt-2 text-sm text-gray-600">{file ? `Arquivo: ${file.name}` : label}</p>
+                        <p className="text-xs text-gray-500">PNG, JPG, GIF ou PDF até 10MB</p>
+                    </div>
+                )
+            }
 
             const handleAnalyze = async () => {
-                const { author, office, signature } = locations;
-                if (!author || !office || !signature) {
-                    alert('Por favor, preencha todos os campos de localização.');
-                    return;
-                }
+                const { residence, powerOfAttorney } = files;
+                if (!residence || !powerOfAttorney) return;
+                
                 setIsAnalyzing(true);
                 setAnalysisResult('');
                 try {
-                    const prompt = `Aja como um investigador de fraudes. Analise a seguinte situação de geolocalização e aponte possíveis inconsistências geográficas ou bandeiras vermelhas. Locais informados: Localização do autor (comprovante de residência): ${author}. Localização do escritório de advocacia: ${office}. Localização onde a procuração foi assinada digitalmente: ${signature}. Forneça uma análise concisa sobre a plausibilidade e os possíveis riscos (ex: captação de clientes indevida, 'advocacia itinerante', etc.).`;
+                    const [residenceB64, poaB64] = await Promise.all([
+                        fileToBase64(residence),
+                        fileToBase64(powerOfAttorney)
+                    ]);
+
+                    const prompt = `Aja como um investigador de fraudes. Analise os dois documentos fornecidos para inferir as seguintes localizações: 1) o endereço do autor (a partir do comprovante de residência), 2) o endereço do escritório de advocacia (a partir da procuração), e 3) o local de assinatura digital da procuração (a partir de metadados). Em seguida, aponte objetivamente quaisquer inconsistências geográficas ou "bandeiras vermelhas" que possam indicar captação irregular de clientes ou outras práticas abusivas.`;
                     
-                    const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                    const payload = {
+                        contents: [{
+                            role: "user",
+                            parts: [
+                                { text: prompt },
+                                { inlineData: { mimeType: residence.type, data: residenceB64 } },
+                                { text: "\n\n--- e ---\n\n" },
+                                { inlineData: { mimeType: powerOfAttorney.type, data: poaB64 } }
+                            ]
+                        }]
+                    };
                     const apiKey = "";
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                     
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                     
                     const result = await response.json();
@@ -504,35 +536,14 @@
             
             return (
                 <div className="space-y-6">
-                    <p className="text-gray-600">Simule uma análise de geolocalização. Insira os locais (cidade/estado) do comprovante de residência, do escritório e da assinatura da procuração. A IA irá analisar possíveis inconsistências.</p>
+                    <p className="text-gray-600">Faça o upload do comprovante de residência e da procuração. A IA irá inferir as localizações e analisar possíveis inconsistências geográficas.</p>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label htmlFor="author" className="block text-sm font-medium text-gray-700">Local do Autor (Residência)</label>
-                            <input type="text" name="author" id="author" value={locations.author} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Ex: Manaus, AM" />
-                        </div>
-                        <div>
-                            <label htmlFor="office" className="block text-sm font-medium text-gray-700">Local do Escritório</label>
-                            <input type="text" name="office" id="office" value={locations.office} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Ex: São Paulo, SP" />
-                        </div>
-                        <div>
-                            <label htmlFor="signature" className="block text-sm font-medium text-gray-700">Local da Assinatura</label>
-                            <input type="text" name="signature" id="signature" value={locations.signature} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Ex: Salvador, BA" />
-                        </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <SingleFileUpload label="Upload do Comprovante de Residência" file={files.residence} onFileChange={(e) => handleFileChange(e, 'residence')} />
+                        <SingleFileUpload label="Upload da Procuração" file={files.powerOfAttorney} onFileChange={(e) => handleFileChange(e, 'powerOfAttorney')} />
                     </div>
 
-                    <div className="bg-white p-4 rounded-lg shadow-md">
-                        <h4 className="font-semibold text-lg mb-4 text-gray-800">Mapa Interativo (Simulação)</h4>
-                        <div className="relative w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
-                            <p className="text-gray-500 z-10">Mapa simulado</p>
-                            <img src="https://dev-caw.github.io/combate-litigancia-abusiva/img/mapa-brasil.svg" className="absolute object-cover w-full h-full opacity-30" />
-                            {locations.author && <div className="absolute top-1/4 left-1/4 transform -translate-x-1/2 -translate-y-1/2 flex items-center flex-col text-center"><div className="w-4 h-4 bg-blue-600 rounded-full shadow-lg"></div><span className="text-xs font-bold text-blue-800 mt-1">Autor</span></div>}
-                            {locations.office && <div className="absolute bottom-1/3 right-1/4 transform translate-x-1/2 translate-y-1/2 flex items-center flex-col text-center"><div className="w-4 h-4 bg-green-600 rounded-full shadow-lg"></div><span className="text-xs font-bold text-green-800 mt-1">Escritório</span></div>}
-                            {locations.signature && <div className="absolute top-1/2 right-1/2 transform translate-x-1/2 -translate-y-1/2 flex items-center flex-col text-center"><div className="w-4 h-4 bg-red-600 rounded-full shadow-lg"></div><span className="text-xs font-bold text-red-800 mt-1">Assinatura</span></div>}
-                        </div>
-                    </div>
-
-                    <button onClick={handleAnalyze} disabled={isAnalyzing || !locations.author || !locations.office || !locations.signature} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300">
+                    <button onClick={handleAnalyze} disabled={isAnalyzing || !files.residence || !files.powerOfAttorney} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300">
                         <SparkleIcon />
                         {isAnalyzing ? "Analisando Geolocalização..." : "Analisar Inconsistências"}
                     </button>
@@ -550,7 +561,7 @@
         const VerificacaoDeDocsModule = () => {
             const [activeTab, setActiveTab] = React.useState('analiseBoleto');
             const tabs = [
-                { id: 'analiseBoleto', label: 'Análise de Documentos (Boletos)' },
+                { id: 'analiseBoleto', label: 'Análise de Documentos' },
                 { id: 'validacaoAssinatura', label: 'Validação de Assinatura Digital' },
                 { id: 'geolocalizacao', label: 'Análise de Geolocalização' }
             ];
@@ -559,7 +570,7 @@
                 <div>
                     <h2 className="text-3xl font-semibold text-gray-800 mb-6">Verificação de Documentos com IA</h2>
                     <div className="border-b border-gray-200">
-                        <nav className="-mb-px flex space-x-6" aria-label="Tabs">
+                        <nav className="-mb-px flex flex-wrap -mx-4" aria-label="Tabs">
                             {tabs.map(tab => (
                                 <button
                                     key={tab.id}
@@ -568,7 +579,7 @@
                                         activeTab === tab.id
                                             ? 'border-indigo-500 text-indigo-600'
                                             : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+                                    } whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm transition-colors`}
                                 >
                                     {tab.label}
                                 </button>
@@ -585,7 +596,7 @@
         };
         
         const AutomacaoDaDefesaModule = () => {
-            const teses = [
+            const allTeses = [
                 { id: 'normas', title: "Observância das normas contratuais e regulatórias" },
                 { id: 'tecnica', title: "Fundamentação técnica das decisões" },
                 { id: 'coletivos', title: "Natureza dos contratos coletivos" },
@@ -603,23 +614,35 @@
                 { id: 'segredo_justica', title: "Indeferimento do pedido de segredo de justiça" },
                 { id: 'indeferimento_total', title: "Indeferimento total dos pleitos" },
                 { id: 'custas_honorarios', title: "Condenação em custas e honorários sucumbenciais" },
-            ];
+            ].sort((a, b) => a.title.localeCompare(b.title));
             
             const [caseContext, setCaseContext] = React.useState("A parte autora, uma empresa de engenharia, ajuizou ação para questionar reajustes anuais por sinistralidade aplicados nos últimos 8 anos em seu contrato de plano de saúde coletivo, alegando abusividade e pedindo a restituição dos valores pagos a mais. Não apresentou laudo atuarial, baseando o pedido apenas em alegações genéricas de onerosidade excessiva.");
+            const [selectedTeses, setSelectedTeses] = React.useState([]);
             const [isGenerating, setIsGenerating] = React.useState(false);
             const [generatedText, setGeneratedText] = React.useState('');
-            const [activeThesis, setActiveThesis] = React.useState('');
 
-            const handleGenerate = async (tese) => {
+            const handleTeseSelection = (teseId) => {
+                setSelectedTeses(prev => 
+                    prev.includes(teseId) ? prev.filter(id => id !== teseId) : [...prev, teseId]
+                );
+            };
+
+            const handleGenerate = async () => {
                 if (!caseContext.trim()) {
                     alert('Por favor, descreva o contexto do caso.');
                     return;
                 }
+                if (selectedTeses.length === 0) {
+                    alert('Por favor, selecione ao menos uma tese.');
+                    return;
+                }
                 setIsGenerating(true);
                 setGeneratedText('');
-                setActiveThesis(tese.title);
+                
+                const selectedTesesTitles = selectedTeses.map(id => allTeses.find(t => t.id === id).title).join('", "');
+                
                 try {
-                    const prompt = `Aja como um advogado especialista. Dado o contexto do caso abaixo, redija até três parágrafos de argumentação jurídica focados especificamente na seguinte tese:\n\n**Tese:** "${tese.title}"\n\n**Contexto do Caso:**\n${caseContext}\n\nElabore uma argumentação concisa, persuasiva e juridicamente fundamentada para ser usada em uma contestação ou recurso.`;
+                    const prompt = `Aja como um advogado especialista. Dado o contexto do caso abaixo, redija uma argumentação jurídica para contestação ou recurso, focada especificamente na(s) seguinte(s) tese(s): "${selectedTesesTitles}".\nA resposta deve começar diretamente com a argumentação, usando o título de cada tese como um cabeçalho em negrito (usando **Título da Tese**) para separar as seções. Não adicione nenhum preâmbulo ou introdução.`;
                     
                     const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
                     const apiKey = "";
@@ -642,43 +665,45 @@
             return (
                 <div>
                     <h2 className="text-3xl font-semibold text-gray-800 mb-2">Automação da Defesa</h2>
-                    <p className="text-gray-600 mb-6">Descreva o contexto do caso, escolha uma tese e deixe a IA construir a argumentação jurídica para você.</p>
+                    <p className="text-gray-600 mb-6">Descreva o contexto do caso, escolha uma ou mais teses e deixe a IA construir a argumentação jurídica.</p>
                     
                     <div className="bg-white p-6 rounded-lg shadow-md mb-6">
                         <label htmlFor="caseContext" className="block text-xl font-semibold text-gray-700 mb-4">1. Contexto do Caso</label>
-                        <textarea 
-                            id="caseContext" 
-                            value={caseContext} 
-                            onChange={(e) => setCaseContext(e.target.value)}
-                            className="w-full h-32 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            placeholder="Descreva os fatos principais, pedidos e argumentos da parte contrária..."
-                        />
+                        <textarea id="caseContext" value={caseContext} onChange={(e) => setCaseContext(e.target.value)} className="w-full h-32 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Descreva os fatos principais, pedidos e argumentos da parte contrária..."/>
                     </div>
 
                     <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-                        <h3 className="text-xl font-semibold text-gray-700 mb-4">2. Selecione a Tese para Desenvolver</h3>
-                        <div className="flex flex-wrap gap-3">
-                            {teses.map(tese => (
-                                <button 
-                                    key={tese.id}
-                                    onClick={() => handleGenerate(tese)}
-                                    disabled={isGenerating}
-                                    className="px-4 py-2 border border-indigo-500 text-indigo-600 text-sm font-medium rounded-md hover:bg-indigo-50 disabled:bg-gray-200 disabled:text-gray-500 disabled:border-gray-300 transition-colors"
-                                >
-                                    {tese.title}
-                                </button>
+                        <h3 className="text-xl font-semibold text-gray-700 mb-4">2. Selecione as Teses para Desenvolver</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {allTeses.map(tese => (
+                                <div key={tese.id} className="flex items-start">
+                                    <input
+                                        id={`tese-${tese.id}`}
+                                        type="checkbox"
+                                        checked={selectedTeses.includes(tese.id)}
+                                        onChange={() => handleTeseSelection(tese.id)}
+                                        className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 mt-1"
+                                    />
+                                    <label htmlFor={`tese-${tese.id}`} className="ml-3 text-sm text-gray-700">{tese.title}</label>
+                                </div>
                             ))}
                         </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+                         <button onClick={handleGenerate} disabled={isGenerating || selectedTeses.length === 0} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed">
+                            <SparkleIcon />
+                            {isGenerating ? "Gerando..." : "Gerar Argumentação com IA"}
+                        </button>
                     </div>
                     
                     {(isGenerating || generatedText) && (
                         <div className="bg-white p-6 rounded-lg shadow-md">
                              <h3 className="text-xl font-semibold text-gray-700 mb-4">3. Argumentação Gerada pela IA</h3>
                              {isGenerating 
-                                ? <p className="text-indigo-700">Gerando argumentação para a tese: "{activeThesis}"... Por favor, aguarde.</p> 
+                                ? <p className="text-indigo-700">Gerando argumentação... Por favor, aguarde.</p> 
                                 : <div className="bg-gray-50 p-4 rounded-md border">
-                                    <h4 className="font-bold text-gray-800 mb-2">{activeThesis}</h4>
-                                    <GeminiResponseRenderer responseText={generatedText} />
+                                    <GeminiResponseRenderer responseText={generatedText} isDirect={true} />
                                   </div>
                               }
                         </div>
@@ -701,20 +726,20 @@
                       <div className="p-2 bg-gray-200">Médio</div>
                       <div className="p-2 bg-gray-200 rounded-t-md">Alto</div>
                       
-                      <div className="p-2 bg-gray-200 rounded-l-md">Alta</div>
-                      <div className="relative bg-yellow-200 p-2 h-16">{risks.map((r,i) => probabilityLevels[r.probability] === 3 && impactLevels[r.impact] === 1 && <div key={i} title={r.type} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${probabilityColors[r.probability]}`}></div>)}</div>
-                      <div className="relative bg-red-200 p-2 h-16">{risks.map((r,i) => probabilityLevels[r.probability] === 3 && impactLevels[r.impact] === 2 && <div key={i} title={r.type} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${probabilityColors[r.probability]}`}></div>)}</div>
-                      <div className="relative bg-red-300 p-2 h-16 rounded-tr-md">{risks.map((r,i) => probabilityLevels[r.probability] === 3 && impactLevels[r.impact] === 3 && <div key={i} title={r.type} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${probabilityColors[r.probability]}`}></div>)}</div>
+                      <div className="p-2 bg-gray-200 rounded-l-md self-center">Alta</div>
+                      <div className="relative bg-yellow-200 p-2 h-16 flex items-center justify-center">{risks.filter(r => probabilityLevels[r.probability] === 3 && impactLevels[r.impact] === 1).map((r,i) => <div key={i} title={r.type} className={`w-4 h-4 rounded-full ${probabilityColors[r.probability]} shadow-md`}></div>)}</div>
+                      <div className="relative bg-red-200 p-2 h-16 flex items-center justify-center">{risks.filter(r => probabilityLevels[r.probability] === 3 && impactLevels[r.impact] === 2).map((r,i) => <div key={i} title={r.type} className={`w-4 h-4 rounded-full ${probabilityColors[r.probability]} shadow-md`}></div>)}</div>
+                      <div className="relative bg-red-300 p-2 h-16 rounded-tr-md flex items-center justify-center">{risks.filter(r => probabilityLevels[r.probability] === 3 && impactLevels[r.impact] === 3).map((r,i) => <div key={i} title={r.type} className={`w-4 h-4 rounded-full ${probabilityColors[r.probability]} shadow-md`}></div>)}</div>
                       
-                      <div className="p-2 bg-gray-200 rounded-l-md">Média</div>
-                      <div className="relative bg-green-200 p-2 h-16">{risks.map((r,i) => probabilityLevels[r.probability] === 2 && impactLevels[r.impact] === 1 && <div key={i} title={r.type} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${probabilityColors[r.probability]}`}></div>)}</div>
-                      <div className="relative bg-yellow-200 p-2 h-16">{risks.map((r,i) => probabilityLevels[r.probability] === 2 && impactLevels[r.impact] === 2 && <div key={i} title={r.type} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${probabilityColors[r.probability]}`}></div>)}</div>
-                      <div className="relative bg-red-200 p-2 h-16 rounded-br-md">{risks.map((r,i) => probabilityLevels[r.probability] === 2 && impactLevels[r.impact] === 3 && <div key={i} title={r.type} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${probabilityColors[r.probability]}`}></div>)}</div>
+                      <div className="p-2 bg-gray-200 rounded-l-md self-center">Média</div>
+                      <div className="relative bg-green-200 p-2 h-16 flex items-center justify-center">{risks.filter(r => probabilityLevels[r.probability] === 2 && impactLevels[r.impact] === 1).map((r,i) => <div key={i} title={r.type} className={`w-4 h-4 rounded-full ${probabilityColors[r.probability]} shadow-md`}></div>)}</div>
+                      <div className="relative bg-yellow-200 p-2 h-16 flex items-center justify-center">{risks.filter(r => probabilityLevels[r.probability] === 2 && impactLevels[r.impact] === 2).map((r,i) => <div key={i} title={r.type} className={`w-4 h-4 rounded-full ${probabilityColors[r.probability]} shadow-md`}></div>)}</div>
+                      <div className="relative bg-red-200 p-2 h-16 flex items-center justify-center">{risks.filter(r => probabilityLevels[r.probability] === 2 && impactLevels[r.impact] === 3).map((r,i) => <div key={i} title={r.type} className={`w-4 h-4 rounded-full ${probabilityColors[r.probability]} shadow-md`}></div>)}</div>
                       
-                      <div className="p-2 bg-gray-200 rounded-bl-md">Baixa</div>
-                      <div className="relative bg-green-300 p-2 h-16">{risks.map((r,i) => probabilityLevels[r.probability] === 1 && impactLevels[r.impact] === 1 && <div key={i} title={r.type} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${probabilityColors[r.probability]}`}></div>)}</div>
-                      <div className="relative bg-green-200 p-2 h-16">{risks.map((r,i) => probabilityLevels[r.probability] === 1 && impactLevels[r.impact] === 2 && <div key={i} title={r.type} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${probabilityColors[r.probability]}`}></div>)}</div>
-                      <div className="relative bg-yellow-200 p-2 h-16 rounded-br-md">{risks.map((r,i) => probabilityLevels[r.probability] === 1 && impactLevels[r.impact] === 3 && <div key={i} title={r.type} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${probabilityColors[r.probability]}`}></div>)}</div>
+                      <div className="p-2 bg-gray-200 rounded-bl-md self-center">Baixa</div>
+                      <div className="relative bg-green-300 p-2 h-16 rounded-bl-md flex items-center justify-center">{risks.filter(r => probabilityLevels[r.probability] === 1 && impactLevels[r.impact] === 1).map((r,i) => <div key={i} title={r.type} className={`w-4 h-4 rounded-full ${probabilityColors[r.probability]} shadow-md`}></div>)}</div>
+                      <div className="relative bg-green-200 p-2 h-16 flex items-center justify-center">{risks.filter(r => probabilityLevels[r.probability] === 1 && impactLevels[r.impact] === 2).map((r,i) => <div key={i} title={r.type} className={`w-4 h-4 rounded-full ${probabilityColors[r.probability]} shadow-md`}></div>)}</div>
+                      <div className="relative bg-yellow-200 p-2 h-16 rounded-br-md flex items-center justify-center">{risks.filter(r => probabilityLevels[r.probability] === 1 && impactLevels[r.impact] === 3).map((r,i) => <div key={i} title={r.type} className={`w-4 h-4 rounded-full ${probabilityColors[r.probability]} shadow-md`}></div>)}</div>
                   </div>
                 </div>
             )
@@ -729,7 +754,7 @@
 
             const getRiskColor = (level) => {
                  switch (level) {
-                    case 'Alto': return 'border-red-500';
+                    case 'Alta': return 'border-red-500';
                     case 'Média': return 'border-yellow-400';
                     case 'Baixa': return 'border-green-500';
                     default: return 'border-gray-300';
@@ -747,15 +772,17 @@
                             if (!analysis) return null;
                             
                             return (
-                                <div key={c.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                                    <button onClick={() => toggleCase(c.id)} className="w-full text-left p-4 flex justify-between items-center hover:bg-gray-50 transition-colors">
+                                <div key={c.id} className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300">
+                                    <button onClick={() => toggleCase(c.id)} className="w-full text-left p-4 flex justify-between items-center hover:bg-gray-50">
                                         <div>
                                             <p className="font-semibold text-indigo-700">{c.caseNumber}</p>
                                             <p className="text-sm text-gray-600">{c.subject}</p>
                                         </div>
                                         <div className="flex items-center gap-4">
                                             <span className="hidden sm:inline-flex items-center gap-2 text-sm text-gray-700">Riscos Identificados: <span className="font-bold">{analysis.risks.length}</span></span>
-                                            {isExpanded ? <ChevronUpIcon/> : <ChevronDownIcon/>}
+                                            <div className={`transform transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
+                                                <ChevronDownIcon/>
+                                            </div>
                                         </div>
                                     </button>
                                     {isExpanded && (
@@ -763,7 +790,7 @@
                                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                                 <div className="space-y-4">
                                                     {analysis.risks.map((risk, index) => (
-                                                         <div key={index} className={`p-4 rounded-lg border-l-4 ${getRiskColor(risk.probability)} bg-white`}>
+                                                         <div key={index} className={`p-4 rounded-lg border-l-4 ${getRiskColor(risk.probability)} bg-white shadow`}>
                                                             <h4 className="font-bold text-gray-800">{risk.type} (Prob: {risk.probability} / Imp: {risk.impact})</h4>
                                                             <p className="text-sm text-gray-600 mt-1">{risk.description}</p>
                                                             <p className="text-sm text-green-700 mt-2 font-medium"><strong>Plano de Mitigação:</strong> {risk.mitigation}</p>
@@ -808,74 +835,173 @@
         };
 
         const CentralDeRelatoriosModule = () => {
-            const reportRef = React.useRef();
+            const logoUrl = 'https://dev-caw.github.io/combate-litigancia-abusiva/img/caw.png';
 
-            const generatePdf = () => {
+            const addHeaderAndFooter = (doc, title) => {
+                const pageCount = doc.internal.getNumberOfPages();
+                doc.setFontSize(16);
+                doc.setTextColor('#1f2937'); // text-gray-800
+                doc.text(title, 40, 60);
+
+                for (let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    // Header
+                    doc.addImage(logoUrl, 'PNG', doc.internal.pageSize.getWidth() - 100, 20, 60, 18);
+                    doc.setDrawColor('#e5e7eb'); // border-gray-200
+                    doc.line(40, 80, doc.internal.pageSize.getWidth() - 40, 80);
+
+                    // Footer
+                    const footerY = doc.internal.pageSize.getHeight() - 40;
+                    doc.line(40, footerY, doc.internal.pageSize.getWidth() - 40, footerY);
+                    doc.setFontSize(8);
+                    doc.setTextColor('#6b7280'); // text-gray-500
+                    doc.text(`Relatório gerado em: ${new Date().toLocaleString('pt-BR')}`, 40, footerY + 15);
+                    doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.getWidth() - 70, footerY + 15);
+                }
+            };
+            
+            const generateRiskReport = () => {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF('p', 'pt', 'a4');
-                const logo = 'https://dev-caw.github.io/combate-litigancia-abusiva/img/caw.png';
-                
-                doc.addImage(logo, 'PNG', 40, 20, 100, 30);
-                doc.setFontSize(18);
-                doc.text("Relatório Consolidado de Riscos", 40, 80);
-                doc.setFontSize(10);
-                doc.setTextColor(100);
-                doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 40, 95);
+                const title = "Relatório Consolidado de Riscos";
 
-                let yPos = 130;
+                const tableBody = [];
                 mockCasesData.forEach(c => {
                     const analysis = riskAnalysisData[c.id];
-                    if (yPos > 700) {
-                        doc.addPage();
-                        yPos = 40;
-                    }
                     if (analysis) {
-                        doc.setFontSize(12);
-                        doc.setTextColor(0);
-                        doc.setFont('helvetica', 'bold');
-                        doc.text(`Caso: ${c.caseNumber} - ${c.subject}`, 40, yPos);
-                        yPos += 20;
-
                         analysis.risks.forEach(risk => {
-                            doc.setFontSize(10);
-                            doc.setFont('helvetica', 'bold');
-                            doc.text(`- Risco ${risk.type} (Prob: ${risk.probability} / Imp: ${risk.impact})`, 50, yPos);
-                            yPos += 15;
-                            doc.setFont('helvetica', 'normal');
-                            const descLines = doc.splitTextToSize(`Descrição: ${risk.description}`, 500);
-                            doc.text(descLines, 55, yPos);
-                            yPos += descLines.length * 12;
-                            const mitLines = doc.splitTextToSize(`Mitigação: ${risk.mitigation}`, 500);
-                            doc.text(mitLines, 55, yPos);
-                            yPos += mitLines.length * 12 + 10;
+                           tableBody.push([c.caseNumber, risk.type, risk.probability, risk.impact, risk.description, risk.mitigation]);
                         });
                     }
                 });
 
-                doc.save('relatorio_riscos_caw.pdf');
+                doc.autoTable({
+                    head: [['Caso', 'Tipo de Risco', 'Prob.', 'Impacto', 'Descrição', 'Mitigação']],
+                    body: tableBody,
+                    startY: 90,
+                    theme: 'striped',
+                    headStyles: { fillColor: '#374151', textColor: '#FFFFFF', fontStyle: 'bold' }, // bg-gray-700 text-white
+                    styles: { font: 'Inter', fontSize: 9 },
+                    columnStyles: { 4: { cellWidth: 150 }, 5: { cellWidth: 150 } }
+                });
+                
+                addHeaderAndFooter(doc, title);
+                doc.save('relatorio_consolidado_riscos.pdf');
             };
+
+            const generateRiskLevelReport = () => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'pt', 'a4');
+                const title = "Relatório de Casos por Nível de Risco";
+
+                const tableBody = mockCasesData
+                    .sort((a,b) => {
+                        const order = { 'Crítico': 0, 'Alto': 1, 'Médio': 2, 'Baixo': 3 };
+                        return order[a.riskLevel] - order[b.riskLevel];
+                    })
+                    .map(c => [
+                        c.caseNumber, 
+                        c.subject, 
+                        c.status, 
+                        c.riskLevel,
+                        c.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                    ]);
+
+                doc.autoTable({
+                    head: [['Caso', 'Assunto', 'Status', 'Nível de Risco', 'Valor da Causa']],
+                    body: tableBody,
+                    startY: 90,
+                    theme: 'grid',
+                    headStyles: { fillColor: '#374151', textColor: '#FFFFFF', fontStyle: 'bold' },
+                    styles: { font: 'Inter', fontSize: 9 },
+                    didParseCell: function (data) {
+                        if (data.section === 'body' && data.column.index === 3) {
+                            if (data.cell.raw === 'Crítico') data.cell.styles.textColor = '#dc2626'; // red-600
+                            if (data.cell.raw === 'Alto') data.cell.styles.textColor = '#f59e0b'; // amber-500
+                        }
+                    }
+                });
+                
+                addHeaderAndFooter(doc, title);
+                doc.save('relatorio_niveis_de_risco.pdf');
+            };
+
+            const generateFraudIndicatorReport = () => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'pt', 'a4');
+                const title = "Relatório de Indicadores de Fraude";
+
+                const tableBody = [];
+                const indicatorMap = {};
+
+                mockCasesData.forEach(c => {
+                    c.details.indicators.forEach(indicatorText => {
+                        const foundIndicator = cnjIndicators.find(i => indicatorText.toLowerCase().includes(i.title.split(' ')[0].toLowerCase()));
+                        const indicatorTitle = foundIndicator ? foundIndicator.title : 'Outros';
+
+                        if (!indicatorMap[indicatorTitle]) indicatorMap[indicatorTitle] = new Set();
+                        indicatorMap[indicatorTitle].add(c.caseNumber);
+                    });
+                });
+                
+                Object.keys(indicatorMap).forEach(indicator => {
+                    tableBody.push([indicator, Array.from(indicatorMap[indicator]).join(', ')]);
+                });
+
+                doc.autoTable({
+                    head: [['Indicador de Fraude (Baseado no CNJ)', 'Casos Associados']],
+                    body: tableBody,
+                    startY: 90,
+                    theme: 'striped',
+                    headStyles: { fillColor: '#374151', textColor: '#FFFFFF', fontStyle: 'bold' },
+                    styles: { font: 'Inter', fontSize: 9 },
+                });
+                
+                addHeaderAndFooter(doc, title);
+                doc.save('relatorio_indicadores_fraude.pdf');
+            };
+
+            const ReportButton = ({title, description, onClick}) => (
+                <div className="border rounded-lg p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
+                   <div className="flex flex-col sm:flex-row justify-between sm:items-center">
+                       <div className="mb-4 sm:mb-0">
+                           <h4 className="font-semibold text-gray-800">{title}</h4>
+                           <p className="text-sm text-gray-500 mt-1">{description}</p>
+                       </div>
+                       <button 
+                           onClick={onClick} 
+                           className="flex-shrink-0 flex items-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                        >
+                           <DownloadIcon/>
+                           Gerar Relatório
+                       </button>
+                   </div>
+                </div>
+            );
 
             return (
                 <div>
                     <h2 className="text-3xl font-semibold text-gray-800 mb-6">Central de Relatórios</h2>
                     <div className="bg-white p-8 rounded-lg shadow-md">
                         <h3 className="text-xl font-semibold text-gray-700 mb-4">Emissão de Relatórios</h3>
-                        <p className="text-gray-600 mb-6">Gere relatórios consolidados em formato PDF para análise e apresentação.</p>
+                        <p className="text-gray-600 mb-6">Gere relatórios consolidados e com visual moderno em formato PDF para análise e apresentação.</p>
                         
-                        <div className="border rounded-lg p-4">
-                           <div className="flex justify-between items-center">
-                               <div>
-                                   <h4 className="font-semibold text-gray-800">Relatório de Análise de Riscos</h4>
-                                   <p className="text-sm text-gray-500">Gera um documento PDF com todos os riscos identificados nos casos ativos.</p>
-                               </div>
-                               <button 
-                                   onClick={generatePdf} 
-                                   className="flex items-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
-                                >
-                                   <DownloadIcon/>
-                                   Baixar PDF
-                               </button>
-                           </div>
+                        <div className="space-y-4">
+                           <ReportButton 
+                                title="Relatório de Análise de Riscos"
+                                description="PDF com todos os riscos, descrições e mitigações identificados."
+                                onClick={generateRiskReport}
+                            />
+                            <ReportButton 
+                                title="Relatório de Casos por Nível de Risco"
+                                description="Lista todos os casos, ordenados por criticidade, com seus respectivos valores."
+                                onClick={generateRiskLevelReport}
+                            />
+                            <ReportButton 
+                                title="Relatório de Indicadores de Fraude"
+                                description="Agrupa casos por tipo de indicador de fraude, baseado nas recomendações do CNJ."
+                                onClick={generateFraudIndicatorReport}
+                            />
                         </div>
                     </div>
                 </div>
