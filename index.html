@@ -1109,8 +1109,6 @@
             const addHeaderAndFooter = (doc, title) => {
                 const pageCount = doc.internal.getNumberOfPages();
                 
-                // Adiciona a fonte Inter ao VFS (Virtual File System) do jsPDF
-                // A fonte Inter (Normal e Bold) está no arquivo inter-font.js
                 doc.addFileToVFS('Inter-Regular.ttf', interRegular);
                 doc.addFont('Inter-Regular.ttf', 'Inter', 'normal');
                 doc.addFileToVFS('Inter-Bold.ttf', interBold);
@@ -1118,22 +1116,20 @@
 
                 for (let i = 1; i <= pageCount; i++) {
                     doc.setPage(i);
-                    // Header
                     doc.setFont('Inter', 'bold');
                     doc.setFontSize(18);
-                    doc.setTextColor('#111827'); // text-gray-900
+                    doc.setTextColor('#111827');
                     doc.text(title, 40, 55);
 
                     doc.addImage(logoUrl, 'PNG', doc.internal.pageSize.getWidth() - 100, 40, 60, 18);
-                    doc.setDrawColor('#e5e7eb'); // border-gray-200
+                    doc.setDrawColor('#e5e7eb');
                     doc.line(40, 75, doc.internal.pageSize.getWidth() - 40, 75);
 
-                    // Footer
                     const footerY = doc.internal.pageSize.getHeight() - 40;
                     doc.line(40, footerY, doc.internal.pageSize.getWidth() - 40, footerY);
                     doc.setFont('Inter', 'normal');
                     doc.setFontSize(8);
-                    doc.setTextColor('#6b7280'); // text-gray-500
+                    doc.setTextColor('#6b7280');
                     doc.text(`Relatório gerado em: ${new Date().toLocaleString('pt-BR')}`, 40, footerY + 15);
                     doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.getWidth() - 70, footerY + 15);
                 }
@@ -1159,7 +1155,7 @@
                     body: tableBody,
                     startY: 90,
                     theme: 'striped',
-                    headStyles: { fillColor: '#1e3a8a', textColor: '#FFFFFF', font: 'Inter', fontStyle: 'bold' }, // blue-900
+                    headStyles: { fillColor: '#1e3a8a', textColor: '#FFFFFF', font: 'Inter', fontStyle: 'bold' },
                     styles: { font: 'Inter', fontSize: 9 },
                     columnStyles: { 4: { cellWidth: 150 }, 5: { cellWidth: 150 } }
                 });
@@ -1195,8 +1191,8 @@
                     styles: { font: 'Inter', fontSize: 9 },
                     didParseCell: function (data) {
                         if (data.section === 'body' && data.column.index === 3) {
-                             if (data.cell.raw === 'Crítico') { data.cell.styles.textColor = '#991b1b'; data.cell.styles.fontStyle = 'bold'; } // red-800
-                            if (data.cell.raw === 'Alto') { data.cell.styles.textColor = '#b45309'; data.cell.styles.fontStyle = 'bold'; } // amber-700
+                             if (data.cell.raw === 'Crítico') { data.cell.styles.textColor = '#991b1b'; data.cell.styles.fontStyle = 'bold'; }
+                            if (data.cell.raw === 'Alto') { data.cell.styles.textColor = '#b45309'; data.cell.styles.fontStyle = 'bold'; }
                         }
                     }
                 });
