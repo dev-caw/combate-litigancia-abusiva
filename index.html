@@ -82,19 +82,19 @@
             VerificaçãoDeDocs: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
             AutomaçãoDaDefesa: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 011-1h1a2 2 0 100-4H7a1 1 0 01-1-1V6a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg>,
             GestãoDeRiscos: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-            SituaçãoDoAdverso: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
+            SituaçãoDoExAdverso: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
             CentralDeRelatorios: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-4m3 4v-2m3 2v-6M5 21h14a2 2 0 002-2V7l-4-4H5a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>,
         };
 
         const modules = [
             { id: 'Dashboard', name: 'Dashboard', icon: moduleIcons.Dashboard },
             { id: 'Overview', name: 'Overview', icon: moduleIcons.Overview },
-            { id: 'AnáliseDeDados', name: 'Análise de Dados e IA', icon: moduleIcons.AnáliseDeDados },
+            { id: 'AnáliseDeDados', name: 'Análise de Dados', icon: moduleIcons.AnáliseDeDados },
             { id: 'DetecçãoDeFraudes', name: 'Detecção de Fraudes', icon: moduleIcons.DetecçãoDeFraudes },
             { id: 'VerificaçãoDeDocs', name: 'Verificação de Docs', icon: moduleIcons.VerificaçãoDeDocs },
             { id: 'AutomaçãoDaDefesa', name: 'Automação da Defesa', icon: moduleIcons.AutomaçãoDaDefesa },
             { id: 'GestãoDeRiscos', name: 'Gestão de Riscos', icon: moduleIcons.GestãoDeRiscos },
-            { id: 'SituaçãoDoAdverso', name: 'Consulta do Adverso', icon: moduleIcons.SituaçãoDoAdverso },
+            { id: 'SituaçãoDoExAdverso', name: 'Situação do Ex-Adverso', icon: moduleIcons.SituaçãoDoExAdverso },
             { id: 'CentralDeRelatorios', name: 'Central de Relatórios', icon: moduleIcons.CentralDeRelatorios },
         ];
 
@@ -434,7 +434,7 @@
             };
             return (
                 <div>
-                    <h2 className="text-3xl font-semibold text-gray-800 mb-6">Overview dos Casos</h2>
+                    <h2 className="text-3xl font-semibold text-gray-800 mb-6">Overview</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                         <div className="bg-white p-5 rounded-lg shadow-md"><h4 className="text-gray-500 text-sm font-medium">TOTAL DE CASOS</h4><p className="text-3xl font-bold text-gray-800">{mockCasesData.length}</p></div>
                         <div className="bg-white p-5 rounded-lg shadow-md"><h4 className="text-gray-500 text-sm font-medium">RISCO ALTO/CRÍTICO</h4><p className="text-3xl font-bold text-red-600">{highRiskCases}</p></div>
@@ -509,7 +509,7 @@
                 } 
             };
 
-            return (<div><h2 className="text-3xl font-semibold text-gray-800 mb-2">Análise de Dados e Estratégia com IA</h2><p className="text-gray-600 mb-6">Descreva os fatos de um caso e a IA irá gerar um resumo, identificar riscos e sugerir estratégias.</p><div className="bg-white p-6 rounded-lg shadow-md mb-6"><h3 className="text-xl font-semibold text-gray-700 mb-4">1. Descreva o Caso</h3><textarea value={caseText} onChange={(e) => setCaseText(e.target.value)} placeholder="Cole ou descreva aqui os fatos, petições ou documentos relevantes para a análise..." className="w-full h-40 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" /> <button onClick={handleAnalyzeWithAI} disabled={!caseText.trim() || isAnalyzing} className="mt-4 w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300"><SparkleIcon /> {isAnalyzing ? 'Analisando...' : 'Gerar Resumo e Análise Estratégica'}</button></div>{(isAnalyzing || analysisResult) && (<div className="bg-white p-6 rounded-lg shadow-md"><h3 className="text-xl font-semibold text-gray-700 mb-4">2. Análise Estratégica da IA</h3>{isAnalyzing ? <p className="text-indigo-700">Aguarde, a IA está processando sua solicitação...</p> : <GeminiResponseRenderer responseText={analysisResult} />}</div>)}</div>);
+            return (<div><h2 className="text-3xl font-semibold text-gray-800 mb-2">Análise de Dados</h2><p className="text-gray-600 mb-6">Descreva os fatos do caso concreto e obtenha um resumo analítico, com a identificação dos riscos e sugeestões de estratégias.</p><div className="bg-white p-6 rounded-lg shadow-md mb-6"><h3 className="text-xl font-semibold text-gray-700 mb-4">1. Descreva o Caso</h3><textarea value={caseText} onChange={(e) => setCaseText(e.target.value)} placeholder="Cole ou descreva aqui os fatos, petições ou documentos relevantes para a análise..." className="w-full h-40 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" /> <button onClick={handleAnalyzeWithAI} disabled={!caseText.trim() || isAnalyzing} className="mt-4 w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300"><SparkleIcon /> {isAnalyzing ? 'Analisando...' : 'Gerar Resumo e Análise Estratégica'}</button></div>{(isAnalyzing || analysisResult) && (<div className="bg-white p-6 rounded-lg shadow-md"><h3 className="text-xl font-semibold text-gray-700 mb-4">2. Análise Estratégica da IA</h3>{isAnalyzing ? <p className="text-indigo-700">Aguarde, a IA está processando sua solicitação...</p> : <GeminiResponseRenderer responseText={analysisResult} />}</div>)}</div>);
         };
         
         const DeteccaoDeFraudesModule = () => {
@@ -545,7 +545,7 @@
 
             return (
                 <div>
-                    <h2 className="text-3xl font-semibold text-gray-800 mb-2">Detecção de Fraudes e Litigância Abusiva</h2>
+                    <h2 className="text-3xl font-semibold text-gray-800 mb-2">Detecção de Fraudes</h2>
                     <p className="text-gray-600 mb-6">Inicie uma varredura para identificar padrões de conduta abusiva nos casos ativos, com base na Recomendação 159/2024 do CNJ.</p>
                     <div className="bg-white p-6 rounded-lg shadow-md mb-6">
                         <button onClick={handleScan} disabled={isScanning} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700 disabled:bg-red-300 transition-colors">
@@ -653,7 +653,7 @@
 
             return (
                 <div className="space-y-6">
-                    <p className="text-gray-600">Faça o upload da imagem de um boleto ou outro documento. A IA do Gemini irá inspecionar o arquivo em busca de indícios de fraude e emitir um parecer técnico objetivo.</p>
+                    <p className="text-gray-600">Faça o upload da imagem de um boleto ou outro documento que será inspecionar  em busca de indícios de fraude.</p>
                     <FileUploadComponent onFileChange={handleFileChange} file={file} />
                     {preview && (
                         <div className="mt-4">
@@ -712,7 +712,7 @@
 
             return (
                 <div className="space-y-6">
-                    <p className="text-gray-600">Faça o upload de um documento (ex: procuração). A IA irá gerar um laudo objetivo sobre a conformidade da assinatura digital com os padrões ICP-Brasil.</p>
+                    <p className="text-gray-600">Faça o upload da  procuração para a análise de conformidade da assinatura digital segundo  os padrões ICP-Brasil.</p>
                      <FileUploadComponent onFileChange={handleFileChange} file={file} />
                      <button onClick={handleAnalyze} disabled={!file || isAnalyzing} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300">
                         <SparkleIcon />
@@ -805,7 +805,7 @@
             
             return (
                 <div className="space-y-6">
-                    <p className="text-gray-600">Faça o upload do comprovante de residência e da procuração. A IA irá inferir as localizações e analisar possíveis inconsistências geográficas.</p>
+                    <p className="text-gray-600">Faça o upload do comprovante de residência e da procuração para análise de eventuais inconsistências geográficas.</p>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <SingleFileUpload label="Upload do Comprovante de Residência" file={files.residence} onFileChange={(e) => handleFileChange(e, 'residence')} />
@@ -837,7 +837,7 @@
 
             return (
                 <div>
-                    <h2 className="text-3xl font-semibold text-gray-800 mb-6">Verificação de Documentos com IA</h2>
+                    <h2 className="text-3xl font-semibold text-gray-800 mb-6">Verificação de Documentos</h2>
                     <div className="border-b border-gray-200">
                         <nav className="-mb-px flex flex-wrap -mx-4" aria-label="Tabs">
                             {tabs.map(tab => (
@@ -934,7 +934,7 @@
             return (
                 <div>
                     <h2 className="text-3xl font-semibold text-gray-800 mb-2">Automação da Defesa</h2>
-                    <p className="text-gray-600 mb-6">Descreva o contexto do caso, escolha uma ou mais teses e deixe a IA construir a argumentação jurídica.</p>
+                    <p className="text-gray-600 mb-6">Descreva o contexto do caso, escolha uma ou mais teses e receba a proposta de argumentação jurídica.</p>
                     
                     <div className="bg-white p-6 rounded-lg shadow-md mb-6">
                         <label htmlFor="caseContext" className="block text-xl font-semibold text-gray-700 mb-4">1. Contexto do Caso</label>
@@ -1032,8 +1032,8 @@
             
             return (
                 <div>
-                    <h2 className="text-3xl font-semibold text-gray-800 mb-6">Gestão de Riscos Jurídicos</h2>
-                    <p className="text-gray-600 mb-6">Análise detalhada dos riscos jurídicos associados a cada caso, com planos de mitigação e visualização de impacto.</p>
+                    <h2 className="text-3xl font-semibold text-gray-800 mb-6">Gestão de Riscos</h2>
+                    <p className="text-gray-600 mb-6">Acesse a análise detalhada dos riscos jurídicos associados a cada caso, com planos de mitigação e visualização de impacto.</p>
                     <div className="space-y-4">
                         {mockCasesData.map(c => {
                             const analysis = riskAnalysisData[c.id.toString()];
@@ -1080,10 +1080,10 @@
             );
         };
         
-        const SituacaoDoAdversoModule = () => {
+        const SituacaoDoExAdversoModule = () => {
             return (
                 <div>
-                    <h2 className="text-3xl font-semibold text-gray-800 mb-6">Consulta da Situação do Adverso</h2>
+                    <h2 className="text-3xl font-semibold text-gray-800 mb-6">Situação do Ex-Adverso</h2>
                     <div className="bg-white p-8 rounded-lg shadow-md text-center">
                         <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
                             Verifique a situação cadastral de advogados de forma rápida e segura diretamente na fonte oficial da Ordem dos Advogados do Brasil.
@@ -1259,7 +1259,7 @@
                     <h2 className="text-3xl font-semibold text-gray-800 mb-6">Central de Relatórios</h2>
                     <div className="bg-white p-8 rounded-lg shadow-md">
                         <h3 className="text-xl font-semibold text-gray-700 mb-4">Emissão de Relatórios</h3>
-                        <p className="text-gray-600 mb-6">Gere relatórios consolidados e com visual moderno em formato PDF para análise e apresentação.</p>
+                        <p className="text-gray-600 mb-6">Gere relatórios consolidados em formato PDF para análise e apresentação gerencial.</p>
                         
                         <div className="space-y-4">
                            <ReportButton 
@@ -1307,7 +1307,7 @@
                     case 'VerificaçãoDeDocs': return <VerificacaoDeDocsModule />;
                     case 'AutomaçãoDaDefesa': return <AutomacaoDaDefesaModule />;
                     case 'GestãoDeRiscos': return <GestaoDeRiscosModule />;
-                    case 'SituaçãoDoAdverso': return <SituacaoDoAdversoModule />;
+                    case 'SituaçãoDoExAdverso': return <SituacaoDoExAdversoModule />;
                     case 'CentralDeRelatorios': return <CentralDeRelatoriosModule />;
                     default: return <GenericModulePage moduleName={module?.name || "Módulo"} />;
                 }
