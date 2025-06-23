@@ -39,10 +39,12 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // --- INICIALIZAÇÃO DO FIREBASE ---
-        // IMPORTANTE: Substitua "YOUR_API_KEY" pela sua chave de API real do Google AI Studio.
+        // --- CONFIGURAÇÃO DAS CHAVES DE API ---
+
+        // 1. CHAVE DO FIREBASE: Usada para autenticação (Login com Google, E-mail/Senha).
+        //    Obtenha este objeto no seu Console do Firebase > Configurações do Projeto.
         const firebaseConfig = {
-            apiKey: "AIzaSyCdgi94wyHts70QES3wJ5TqYfM3CkjKyGA", // Obtenha sua chave em https://aistudio.google.com/app/apikey
+            apiKey: "AIzaSyCdgi94wyHts70QES3wJ5TqYfM3CkjKyGA", // <-- INSIRA AQUI A CHAVE DO SEU PROJETO FIREBASE
             authDomain: "caw-combate-litigancia-abusiva.firebaseapp.com",
             projectId: "caw-combate-litigancia-abusiva",
             storageBucket: "caw-combate-litigancia-abusiva.appspot.com",
@@ -50,7 +52,12 @@
             appId: "1:486284516738:web:f93e70333563fadb62839b",
             measurementId: "G-70MZCTBNKG"
         };
+
+        // 2. CHAVE DA API GEMINI: Usada para os recursos de Inteligência Artificial.
+        //    Obtenha sua chave no Google AI Studio: https://aistudio.google.com/app/apikey
+        const GEMINI_API_KEY = "AIzaSyCU5O5CmsjuS0IXW4epjkRHHytfd2sWdJI"; // <-- INSIRA AQUI A CHAVE DO GOOGLE AI STUDIO
         
+        // --- INICIALIZAÇÃO DO FIREBASE ---
         let app;
         try {
             app = firebase.app();
@@ -486,8 +493,8 @@
             const [analysisResult, setAnalysisResult] = React.useState('');
             
             const handleAnalyzeWithAI = async () => { 
-                if (!caseText.trim() || !firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY") {
-                    setAnalysisResult("Erro: A chave de API não foi configurada. Por favor, adicione sua chave de API do Google AI Studio no objeto firebaseConfig.");
+                if (!caseText.trim() || !GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
+                    setAnalysisResult("Erro: A chave da API do Gemini não foi configurada. Por favor, adicione sua chave no início do script.");
                     return;
                 }
                 setIsAnalyzing(true); 
@@ -496,7 +503,7 @@
                 const prompt = `Aja como um advogado sênior e estrategista. Analise o seguinte relato de um caso jurídico. Forneça uma resposta estruturada usando a formatação "### Título" para os cabeçalhos e "- " para listas. A resposta deve conter EXATAMENTE os seguintes cabeçalhos:\n### Resumo do Caso\n### Pontos de Atenção e Riscos\n### Sugestão de Estratégia\n\nTexto do caso para análise:\n---\n${caseText}\n---`; 
                 try { 
                     const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] }; 
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${firebaseConfig.apiKey}`; 
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`; 
                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); 
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); 
                     const result = await response.json(); 
@@ -628,8 +635,8 @@
 
             const handleAnalyze = async () => {
                 if (!file) return;
-                if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY") {
-                    setAnalysisResult("Erro: A chave de API não foi configurada. Por favor, adicione sua chave de API do Google AI Studio no objeto firebaseConfig.");
+                if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
+                    setAnalysisResult("Erro: A chave da API do Gemini não foi configurada. Por favor, adicione sua chave no início do script.");
                     return;
                 }
                 setIsAnalyzing(true);
@@ -644,7 +651,7 @@
                             parts: [ { text: prompt }, { inlineData: { mimeType: file.type, data: base64Image } } ]
                         }]
                     };
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${firebaseConfig.apiKey}`;
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
                     
                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -696,8 +703,8 @@
             
             const handleAnalyze = async () => {
                 if (!file) return;
-                 if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY") {
-                    setAnalysisResult("Erro: A chave de API não foi configurada. Por favor, adicione sua chave de API do Google AI Studio no objeto firebaseConfig.");
+                 if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
+                    setAnalysisResult("Erro: A chave da API do Gemini não foi configurada. Por favor, adicione sua chave no início do script.");
                     return;
                 }
                 setIsAnalyzing(true);
@@ -706,7 +713,7 @@
                     const prompt = `Aja como um perito em assinaturas digitais. Um documento foi enviado para análise. Gere um laudo técnico objetivo sobre a conformidade da assinatura digital contida no documento com os padrões ICP-Brasil. O laudo deve ser estruturado com os seguintes tópicos em negrito: **Verificação do Certificado Digital**, **Validade da Cadeia de Confiança**, **Carimbo de Tempo (Timestamp)** e **Conclusão Pericial Objetiva**. O texto deve ser técnico, verossímil e conclusivo sobre a validade (ou não) da assinatura, baseado nos padrões técnicos.`;
                     
                     const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${firebaseConfig.apiKey}`;
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
                     
                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -771,8 +778,8 @@
             const handleAnalyze = async () => {
                 const { residence, powerOfAttorney } = files;
                 if (!residence || !powerOfAttorney) return;
-                 if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY") {
-                    setAnalysisResult("Erro: A chave de API não foi configurada. Por favor, adicione sua chave de API do Google AI Studio no objeto firebaseConfig.");
+                 if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
+                    setAnalysisResult("Erro: A chave da API do Gemini não foi configurada. Por favor, adicione sua chave no início do script.");
                     return;
                 }
                 
@@ -797,7 +804,7 @@
                             ]
                         }]
                     };
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${firebaseConfig.apiKey}`;
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
                     
                     const response = await fetch(apiUrl, {
                         method: 'POST',
@@ -919,9 +926,9 @@
                     setError("É necessário preencher o contexto do caso e selecionar ao menos uma tese.");
                     return;
                 }
-                 if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY") {
-                    setError("Erro: A chave de API não foi configurada. Por favor, adicione sua chave de API do Google AI Studio no objeto firebaseConfig.");
-                    setGeneratedText( "Erro: A chave de API não foi configurada. Por favor, adicione sua chave de API do Google AI Studio no objeto firebaseConfig.");
+                 if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
+                    setError("Erro: A chave da API do Gemini não foi configurada. Por favor, adicione sua chave no início do script.");
+                    setGeneratedText("Erro: A chave da API do Gemini não foi configurada. Por favor, adicione sua chave no início do script.");
                     return;
                 }
                 
@@ -937,7 +944,7 @@
                     A resposta deve começar diretamente com a argumentação, usando o título de cada tese como um cabeçalho em negrito (usando **Título da Tese**) para separar as seções. Não adicione nenhum preâmbulo, introdução ou conclusão.`;
                     
                     const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${firebaseConfig.apiKey}`;
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
                     
                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     
