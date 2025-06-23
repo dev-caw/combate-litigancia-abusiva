@@ -45,14 +45,14 @@
         // --- INICIALIZAÇÃO DO FIREBASE ---
         // IMPORTANTE: Substitua com as configurações do seu projeto Firebase.
         const firebaseConfig = {
-  apiKey: "AIzaSyCdgi94wyHts70QES3wJ5TqYfM3CkjKyGA",
-  authDomain: "caw-combate-litigancia-abusiva.firebaseapp.com",
-  projectId: "caw-combate-litigancia-abusiva",
-  storageBucket: "caw-combate-litigancia-abusiva.firebasestorage.app",
-  messagingSenderId: "486284516738",
-  appId: "1:486284516738:web:f93e70333563fadb62839b",
-  measurementId: "G-70MZCTBNKG"
-};
+            apiKey: "AIzaSyCdgi94wyHts70QES3wJ5TqYfM3CkjKyGA", // Chave de exemplo, substitua pela sua
+            authDomain: "caw-combate-litigancia-abusiva.firebaseapp.com",
+            projectId: "caw-combate-litigancia-abusiva",
+            storageBucket: "caw-combate-litigancia-abusiva.appspot.com",
+            messagingSenderId: "486284516738",
+            appId: "1:486284516738:web:f93e70333563fadb62839b",
+            measurementId: "G-70MZCTBNKG"
+        };
         
         let app;
         try {
@@ -151,7 +151,6 @@
         
         // --- COMPONENTES DE AUTENTICAÇÃO ---
         const AuthPage = () => {
-            const [isLoginView, setIsLoginView] = React.useState(true);
             const [authAction, setAuthAction] = React.useState('login'); // 'login', 'register', 'reset'
 
             const renderForm = () => {
@@ -174,10 +173,10 @@
                         {renderForm()}
                         {authAction !== 'reset' && (
                              <div className="text-center text-sm">
-                                <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500" onClick={() => setAuthAction(authAction === 'login' ? 'register' : 'login')}>
-                                    {authAction === 'login' ? "Não tem uma conta? Cadastre-se" : "Já tem uma conta? Faça o login"}
-                                </a>
-                            </div>
+                                 <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500" onClick={(e) => { e.preventDefault(); setAuthAction(authAction === 'login' ? 'register' : 'login'); }}>
+                                     {authAction === 'login' ? "Não tem uma conta? Cadastre-se" : "Já tem uma conta? Faça o login"}
+                                 </a>
+                             </div>
                         )}
                     </div>
                 </div>
@@ -527,7 +526,7 @@
                 setTimeout(() => {
                     const highRiskCases = mockCasesData.filter(c => c.riskLevel === 'Alto' || c.riskLevel === 'Crítico');
                     const results = {};
-                     
+                    
                     highRiskCases.forEach(c => {
                         if (c.details.indicators.some(ind => ind.includes("Concentração de grande volume") || ind.includes("50 ações idênticas"))) {
                             if(!results['l']) results['l'] = { indicator: cnjIndicators.find(i => i.id === 'l'), cases: []};
@@ -542,7 +541,7 @@
                              results['m'].cases.push(c);
                         }
                     });
-                     
+                    
                     setScanResults(Object.values(results));
                     setIsScanning(false);
                 }, 2500);
@@ -571,7 +570,7 @@
                                      <div className="mt-4">
                                          <h5 className="font-semibold text-gray-800 mb-2">Casos Relacionados ({cases.length}):</h5>
                                          <div className="flex flex-wrap gap-2">
-                                            {cases.map(c => ( <span key={c.id} className="px-3 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800">{c.caseNumber}</span>))}
+                                             {cases.map(c => ( <span key={c.id} className="px-3 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800">{c.caseNumber}</span>))}
                                         </div>
                                      </div>
                                  </div>
@@ -618,9 +617,9 @@
                     setFile(selectedFile);
                      if(selectedFile.type.startsWith('image/')) {
                        setPreview(URL.createObjectURL(selectedFile));
-                    } else {
+                     } else {
                        setPreview(null);
-                    }
+                     }
                     setAnalysisResult('');
                 }
             };
@@ -749,15 +748,15 @@
             const SingleFileUpload = ({label, file, onFileChange}) => {
                 const fileInputRef = React.useRef();
                 return (
-                     <div 
-                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-indigo-500 bg-gray-50"
-                        onClick={() => fileInputRef.current.click()}
-                    >
-                        <input type="file" accept="image/*,.pdf" ref={fileInputRef} onChange={onFileChange} className="hidden" />
-                        <UploadIcon className="mx-auto h-12 w-12 text-gray-400" />
-                        <p className="mt-2 text-sm text-gray-600">{file ? `Arquivo: ${file.name}` : label}</p>
-                        <p className="text-xs text-gray-500">PNG, JPG, GIF ou PDF até 10MB</p>
-                    </div>
+                       <div 
+                         className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-indigo-500 bg-gray-50"
+                         onClick={() => fileInputRef.current.click()}
+                     >
+                         <input type="file" accept="image/*,.pdf" ref={fileInputRef} onChange={onFileChange} className="hidden" />
+                         <UploadIcon className="mx-auto h-12 w-12 text-gray-400" />
+                         <p className="mt-2 text-sm text-gray-600">{file ? `Arquivo: ${file.name}` : label}</p>
+                         <p className="text-xs text-gray-500">PNG, JPG, GIF ou PDF até 10MB</p>
+                     </div>
                 )
             }
 
@@ -894,6 +893,8 @@
             const [selectedTeses, setSelectedTeses] = React.useState([]);
             const [isGenerating, setIsGenerating] = React.useState(false);
             const [generatedText, setGeneratedText] = React.useState('');
+            const [error, setError] = React.useState('');
+
 
             const handleTeseSelection = (teseId) => {
                 setSelectedTeses(prev => 
@@ -902,32 +903,46 @@
             };
 
             const handleGenerate = async () => {
-                if (!caseContext.trim()) {
-                    alert('Por favor, descreva o contexto do caso.');
+                // Validações antes de prosseguir
+                if (!caseContext.trim() || selectedTeses.length === 0) {
+                    setError("É necessário preencher o contexto do caso e selecionar ao menos uma tese.");
                     return;
                 }
-                if (selectedTeses.length === 0) {
-                    alert('Por favor, selecione ao menos uma tese.');
-                    return;
-                }
+                
+                setError(''); // Limpa erros anteriores
                 setIsGenerating(true);
                 setGeneratedText('');
                 
                 const selectedTesesTitles = selectedTeses.map(id => allTeses.find(t => t.id === id).title).join('", "');
                 
                 try {
-                    const prompt = `Aja como um advogado especialista. Dado o contexto do caso abaixo, redija uma argumentação jurídica para contestação ou recurso, focada especificamente na(s) seguinte(s) tese(s): "${selectedTesesTitles}".\nA resposta deve começar diretamente com a argumentação, usando o título de cada tese como um cabeçalho em negrito (usando **Título da Tese**) para separar as seções. Não adicione nenhum preâmbulo ou introdução.`;
+                    // CORREÇÃO: Adicionado o `caseContext` ao prompt.
+                    const prompt = `Aja como um advogado especialista. Dado o contexto do caso abaixo, redija uma argumentação jurídica para contestação ou recurso, focada especificamente na(s) seguinte(s) tese(s): "${selectedTesesTitles}".
+                    \n\n**Contexto do Caso:**\n${caseContext}\n\n
+                    A resposta deve começar diretamente com a argumentação, usando o título de cada tese como um cabeçalho em negrito (usando **Título da Tese**) para separar as seções. Não adicione nenhum preâmbulo, introdução ou conclusão.`;
                     
                     const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-                    const apiKey = "";
+                    const apiKey = ""; // Deixe em branco para usar a chave gerenciada pelo ambiente
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                     
                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    
+                    if (!response.ok) {
+                         const errorBody = await response.text();
+                         console.error("Erro da API:", errorBody);
+                         throw new Error(`HTTP error! status: ${response.status}`);
+                    }
                     
                     const result = await response.json();
-                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "Não foi possível gerar a argumentação.";
-                    setGeneratedText(text);
+
+                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        setGeneratedText(text);
+                    } else {
+                        console.error("Resposta da API em formato inesperado:", result);
+                        setGeneratedText("Não foi possível gerar a argumentação. A resposta da IA estava vazia ou em formato incorreto.");
+                    }
+
                 } catch (error) {
                     console.error("Erro ao gerar tese:", error);
                     setGeneratedText("Ocorreu um erro ao gerar a argumentação. Tente novamente.");
@@ -965,20 +980,21 @@
                     </div>
 
                     <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-                         <button onClick={handleGenerate} disabled={isGenerating || selectedTeses.length === 0} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed">
+                         <button onClick={handleGenerate} disabled={isGenerating || selectedTeses.length === 0 || !caseContext.trim()} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed">
                             <SparkleIcon />
                             {isGenerating ? "Gerando..." : "Gerar Argumentação com IA"}
                         </button>
+                         {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
                     </div>
                     
                     {(isGenerating || generatedText) && (
                         <div className="bg-white p-6 rounded-lg shadow-md">
                              <h3 className="text-xl font-semibold text-gray-700 mb-4">3. Argumentação Gerada pela IA</h3>
                              {isGenerating 
-                                ? <p className="text-indigo-700">Gerando argumentação... Por favor, aguarde.</p> 
-                                : <div className="bg-gray-50 p-4 rounded-md border">
-                                    <GeminiResponseRenderer responseText={generatedText} isDirect={true} />
-                                  </div>
+                               ? <p className="text-indigo-700">Gerando argumentação... Por favor, aguarde.</p> 
+                               : <div className="bg-gray-50 p-4 rounded-md border">
+                                   <GeminiResponseRenderer responseText={generatedText} isDirect={true} />
+                                 </div>
                               }
                         </div>
                     )}
@@ -1251,7 +1267,7 @@
                        <button 
                            onClick={onClick} 
                            className="flex-shrink-0 flex items-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-                        >
+                       >
                            <DownloadIcon/>
                            Gerar Relatório
                        </button>
@@ -1268,19 +1284,19 @@
                         
                         <div className="space-y-4">
                            <ReportButton 
-                                title="Relatório de Análise de Riscos"
-                                description="PDF com todos os riscos, descrições e mitigações identificados."
-                                onClick={generateRiskReport}
+                               title="Relatório de Análise de Riscos"
+                               description="PDF com todos os riscos, descrições e mitigações identificados."
+                               onClick={generateRiskReport}
                             />
                             <ReportButton 
-                                title="Relatório de Casos por Nível de Risco"
-                                description="Lista todos os casos, ordenados por criticidade, com seus respectivos valores."
-                                onClick={generateRiskLevelReport}
+                               title="Relatório de Casos por Nível de Risco"
+                               description="Lista todos os casos, ordenados por criticidade, com seus respectivos valores."
+                               onClick={generateRiskLevelReport}
                             />
                             <ReportButton 
-                                title="Relatório de Indicadores de Fraude"
-                                description="Agrupa casos por tipo de indicador de fraude, baseado nas recomendações do CNJ."
-                                onClick={generateFraudIndicatorReport}
+                               title="Relatório de Indicadores de Fraude"
+                               description="Agrupa casos por tipo de indicador de fraude, baseado nas recomendações do CNJ."
+                               onClick={generateFraudIndicatorReport}
                             />
                         </div>
                     </div>
@@ -1298,7 +1314,7 @@
             const handleSelectModule = (moduleId) => {
                 setActiveModule(moduleId);
                  if (moduleId === 'DetecçãoDeFraudes') {
-                    setFraudAlert(false); 
+                     setFraudAlert(false); 
                  }
             };
             
