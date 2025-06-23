@@ -17,9 +17,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     
-    <!-- Fonte Inter para jsPDF -->
-    <script src="https://cdn.jsdelivr.net/gh/dev-caw/inter-font/inter-font.js"></script>
-
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -43,16 +40,16 @@
 
     <script type="text/babel">
         // --- INICIALIZAÇÃO DO FIREBASE ---
-        // IMPORTANTE: Substitua com as configurações do seu projeto Firebase.
+        // IMPORTANTE: Substitua "YOUR_API_KEY" pela sua chave de API real do Google AI Studio.
         const firebaseConfig = {
-  apiKey: "AIzaSyCdgi94wyHts70QES3wJ5TqYfM3CkjKyGA",
-  authDomain: "caw-combate-litigancia-abusiva.firebaseapp.com",
-  projectId: "caw-combate-litigancia-abusiva",
-  storageBucket: "caw-combate-litigancia-abusiva.firebasestorage.app",
-  messagingSenderId: "486284516738",
-  appId: "1:486284516738:web:f93e70333563fadb62839b",
-  measurementId: "G-70MZCTBNKG"
-};
+            apiKey: "AIzaSyCU5O5CmsjuS0IXW4epjkRHHytfd2sWdJI", // Obtenha sua chave em https://aistudio.google.com/app/apikey
+            authDomain: "caw-combate-litigancia-abusiva.firebaseapp.com",
+            projectId: "caw-combate-litigancia-abusiva",
+            storageBucket: "caw-combate-litigancia-abusiva.appspot.com",
+            messagingSenderId: "486284516738",
+            appId: "1:486284516738:web:f93e70333563fadb62839b",
+            measurementId: "G-70MZCTBNKG"
+        };
         
         let app;
         try {
@@ -489,15 +486,17 @@
             const [analysisResult, setAnalysisResult] = React.useState('');
             
             const handleAnalyzeWithAI = async () => { 
-                if (!caseText.trim()) return; 
+                if (!caseText.trim() || !firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY") {
+                    setAnalysisResult("Erro: A chave de API não foi configurada. Por favor, adicione sua chave de API do Google AI Studio no objeto firebaseConfig.");
+                    return;
+                }
                 setIsAnalyzing(true); 
                 setAnalysisResult(''); 
                 let text = ''; 
                 const prompt = `Aja como um advogado sênior e estrategista. Analise o seguinte relato de um caso jurídico. Forneça uma resposta estruturada usando a formatação "### Título" para os cabeçalhos e "- " para listas. A resposta deve conter EXATAMENTE os seguintes cabeçalhos:\n### Resumo do Caso\n### Pontos de Atenção e Riscos\n### Sugestão de Estratégia\n\nTexto do caso para análise:\n---\n${caseText}\n---`; 
                 try { 
                     const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] }; 
-                    const apiKey = ""; 
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`; 
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${firebaseConfig.apiKey}`; 
                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); 
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); 
                     const result = await response.json(); 
@@ -629,6 +628,10 @@
 
             const handleAnalyze = async () => {
                 if (!file) return;
+                if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY") {
+                    setAnalysisResult("Erro: A chave de API não foi configurada. Por favor, adicione sua chave de API do Google AI Studio no objeto firebaseConfig.");
+                    return;
+                }
                 setIsAnalyzing(true);
                 setAnalysisResult('');
                 try {
@@ -641,8 +644,7 @@
                             parts: [ { text: prompt }, { inlineData: { mimeType: file.type, data: base64Image } } ]
                         }]
                     };
-                    const apiKey = "";
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${firebaseConfig.apiKey}`;
                     
                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -694,14 +696,17 @@
             
             const handleAnalyze = async () => {
                 if (!file) return;
+                 if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY") {
+                    setAnalysisResult("Erro: A chave de API não foi configurada. Por favor, adicione sua chave de API do Google AI Studio no objeto firebaseConfig.");
+                    return;
+                }
                 setIsAnalyzing(true);
                 setAnalysisResult('');
                 try {
                     const prompt = `Aja como um perito em assinaturas digitais. Um documento foi enviado para análise. Gere um laudo técnico objetivo sobre a conformidade da assinatura digital contida no documento com os padrões ICP-Brasil. O laudo deve ser estruturado com os seguintes tópicos em negrito: **Verificação do Certificado Digital**, **Validade da Cadeia de Confiança**, **Carimbo de Tempo (Timestamp)** e **Conclusão Pericial Objetiva**. O texto deve ser técnico, verossímil e conclusivo sobre a validade (ou não) da assinatura, baseado nos padrões técnicos.`;
                     
                     const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-                    const apiKey = "";
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${firebaseConfig.apiKey}`;
                     
                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -766,6 +771,10 @@
             const handleAnalyze = async () => {
                 const { residence, powerOfAttorney } = files;
                 if (!residence || !powerOfAttorney) return;
+                 if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY") {
+                    setAnalysisResult("Erro: A chave de API não foi configurada. Por favor, adicione sua chave de API do Google AI Studio no objeto firebaseConfig.");
+                    return;
+                }
                 
                 setIsAnalyzing(true);
                 setAnalysisResult('');
@@ -788,8 +797,7 @@
                             ]
                         }]
                     };
-                    const apiKey = "";
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${firebaseConfig.apiKey}`;
                     
                     const response = await fetch(apiUrl, {
                         method: 'POST',
@@ -911,6 +919,11 @@
                     setError("É necessário preencher o contexto do caso e selecionar ao menos uma tese.");
                     return;
                 }
+                 if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY") {
+                    setError("Erro: A chave de API não foi configurada. Por favor, adicione sua chave de API do Google AI Studio no objeto firebaseConfig.");
+                    setGeneratedText( "Erro: A chave de API não foi configurada. Por favor, adicione sua chave de API do Google AI Studio no objeto firebaseConfig.");
+                    return;
+                }
                 
                 setError(''); // Limpa erros anteriores
                 setIsGenerating(true);
@@ -919,14 +932,12 @@
                 const selectedTesesTitles = selectedTeses.map(id => allTeses.find(t => t.id === id).title).join('", "');
                 
                 try {
-                    // CORREÇÃO: Adicionado o `caseContext` ao prompt.
                     const prompt = `Aja como um advogado especialista. Dado o contexto do caso abaixo, redija uma argumentação jurídica para contestação ou recurso, focada especificamente na(s) seguinte(s) tese(s): "${selectedTesesTitles}".
                     \n\n**Contexto do Caso:**\n${caseContext}\n\n
                     A resposta deve começar diretamente com a argumentação, usando o título de cada tese como um cabeçalho em negrito (usando **Título da Tese**) para separar as seções. Não adicione nenhum preâmbulo, introdução ou conclusão.`;
                     
                     const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-                    const apiKey = ""; // Deixe em branco para usar a chave gerenciada pelo ambiente
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${firebaseConfig.apiKey}`;
                     
                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     
@@ -1133,14 +1144,9 @@
             const addHeaderAndFooter = (doc, title) => {
                 const pageCount = doc.internal.getNumberOfPages();
                 
-                doc.addFileToVFS('Inter-Regular.ttf', interRegular);
-                doc.addFont('Inter-Regular.ttf', 'Inter', 'normal');
-                doc.addFileToVFS('Inter-Bold.ttf', interBold);
-                doc.addFont('Inter-Bold.ttf', 'Inter', 'bold');
-
                 for (let i = 1; i <= pageCount; i++) {
                     doc.setPage(i);
-                    doc.setFont('Inter', 'bold');
+                    doc.setFont('helvetica', 'bold');
                     doc.setFontSize(18);
                     doc.setTextColor('#111827');
                     doc.text(title, 40, 55);
@@ -1151,7 +1157,7 @@
 
                     const footerY = doc.internal.pageSize.getHeight() - 40;
                     doc.line(40, footerY, doc.internal.pageSize.getWidth() - 40, footerY);
-                    doc.setFont('Inter', 'normal');
+                    doc.setFont('helvetica', 'normal');
                     doc.setFontSize(8);
                     doc.setTextColor('#6b7280');
                     doc.text(`Relatório gerado em: ${new Date().toLocaleString('pt-BR')}`, 40, footerY + 15);
@@ -1179,8 +1185,8 @@
                     body: tableBody,
                     startY: 90,
                     theme: 'striped',
-                    headStyles: { fillColor: '#1e3a8a', textColor: '#FFFFFF', font: 'Inter', fontStyle: 'bold' },
-                    styles: { font: 'Inter', fontSize: 9 },
+                    headStyles: { fillColor: '#1e3a8a', textColor: '#FFFFFF', font: 'helvetica', fontStyle: 'bold' },
+                    styles: { font: 'helvetica', fontSize: 9 },
                     columnStyles: { 4: { cellWidth: 150 }, 5: { cellWidth: 150 } }
                 });
                 
@@ -1211,8 +1217,8 @@
                     body: tableBody,
                     startY: 90,
                     theme: 'grid',
-                    headStyles: { fillColor: '#1e3a8a', textColor: '#FFFFFF', font: 'Inter', fontStyle: 'bold' },
-                    styles: { font: 'Inter', fontSize: 9 },
+                    headStyles: { fillColor: '#1e3a8a', textColor: '#FFFFFF', font: 'helvetica', fontStyle: 'bold' },
+                    styles: { font: 'helvetica', fontSize: 9 },
                     didParseCell: function (data) {
                         if (data.section === 'body' && data.column.index === 3) {
                              if (data.cell.raw === 'Crítico') { data.cell.styles.textColor = '#991b1b'; data.cell.styles.fontStyle = 'bold'; }
@@ -1252,8 +1258,8 @@
                     body: tableBody,
                     startY: 90,
                     theme: 'striped',
-                    headStyles: { fillColor: '#1e3a8a', textColor: '#FFFFFF', font: 'Inter', fontStyle: 'bold' },
-                    styles: { font: 'Inter', fontSize: 9 },
+                    headStyles: { fillColor: '#1e3a8a', textColor: '#FFFFFF', font: 'helvetica', fontStyle: 'bold' },
+                    styles: { font: 'helvetica', fontSize: 9 },
                 });
                 
                 addHeaderAndFooter(doc, title);
