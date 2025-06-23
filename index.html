@@ -45,14 +45,14 @@
         // --- INICIALIZAÇÃO DO FIREBASE ---
         // IMPORTANTE: Substitua com as configurações do seu projeto Firebase.
         const firebaseConfig = {
-            apiKey: "AIzaSyCdgi94wyHts70QES3wJ5TqYfM3CkjKyGA", // Chave de exemplo, substitua pela sua
-            authDomain: "caw-combate-litigancia-abusiva.firebaseapp.com",
-            projectId: "caw-combate-litigancia-abusiva",
-            storageBucket: "caw-combate-litigancia-abusiva.appspot.com",
-            messagingSenderId: "486284516738",
-            appId: "1:486284516738:web:f93e70333563fadb62839b",
-            measurementId: "G-70MZCTBNKG"
-        };
+  apiKey: "AIzaSyCdgi94wyHts70QES3wJ5TqYfM3CkjKyGA",
+  authDomain: "caw-combate-litigancia-abusiva.firebaseapp.com",
+  projectId: "caw-combate-litigancia-abusiva",
+  storageBucket: "caw-combate-litigancia-abusiva.firebasestorage.app",
+  messagingSenderId: "486284516738",
+  appId: "1:486284516738:web:f93e70333563fadb62839b",
+  measurementId: "G-70MZCTBNKG"
+};
         
         let app;
         try {
@@ -77,6 +77,8 @@
         const ExternalLinkIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg> );
         const DownloadIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg> );
         const GoogleIcon = () => (<svg className="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C41.38,36.43,44,30.631,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>);
+        const ArrowLeftOnRectangleIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" /></svg>);
+        const ArrowRightOnRectangleIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H12" /></svg>);
 
         // --- Estrutura de Ícones e Módulos ---
         const moduleIcons = {
@@ -372,11 +374,13 @@
 
         // --- ESTRUTURA PRINCIPAL ---
 
-        const Sidebar = ({ activeModule, onSelectModule, onLogout, isSidebarOpen, fraudAlert, closeSidebar }) => {
+        const Sidebar = ({ activeModule, onSelectModule, onLogout, isSidebarOpen, isSidebarCollapsed, toggleSidebarCollapse, fraudAlert, closeSidebar }) => {
             return (
-                <aside className={`bg-gray-800 text-gray-100 flex flex-col fixed lg:static inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 w-64`}>
+                <aside className={`bg-gray-800 text-gray-100 flex flex-col fixed lg:static inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}>
                     <div className="flex items-center justify-between h-20 border-b border-gray-700 px-4">
-                        <img src="https://dev-caw.github.io/combate-litigancia-abusiva/img/logo-white.png" alt="logotipo-branco" style={{ padding: '40px' }} />
+                        <div className={`transition-all duration-300 ${isSidebarCollapsed ? 'opacity-0 scale-0' : 'opacity-100 scale-100'}`}>
+                           {!isSidebarCollapsed && <img src="https://dev-caw.github.io/combate-litigancia-abusiva/img/logo-white.png" alt="logotipo-branco" className="h-10" />}
+                        </div>
                         <button onClick={closeSidebar} className="lg:hidden text-gray-400 hover:text-white">
                             <CloseIcon />
                         </button>
@@ -392,17 +396,21 @@
                                  customClass = 'bg-red-600 animate-pulse';
                              }
                             return (
-                                <a key={module.id} href="#" onClick={(e) => { e.preventDefault(); onSelectModule(module.id); if(closeSidebar) closeSidebar(); }} className={`flex items-center p-2 text-base font-normal rounded-lg transition-colors ${customClass}`}>
+                                <a key={module.id} href="#" onClick={(e) => { e.preventDefault(); onSelectModule(module.id); if(window.innerWidth < 1024) closeSidebar(); }} className={`flex items-center p-2 text-base font-normal rounded-lg transition-colors ${customClass} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
                                     <module.icon />
-                                    <span className="ml-3">{module.name}</span>
+                                    <span className={`ml-3 transition-opacity duration-200 ${isSidebarCollapsed ? 'hidden' : 'block'}`}>{module.name}</span>
                                 </a>
                             );
                         })}
                     </nav>
+
                     <div className="px-2 py-4 mt-auto border-t border-gray-700">
-                         <a href="#" onClick={onLogout} className="flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-700 transition-colors">
+                        <button onClick={toggleSidebarCollapse} className="hidden lg:flex items-center justify-center w-full p-2 text-base font-normal rounded-lg hover:bg-gray-700 transition-colors">
+                           {isSidebarCollapsed ? <ArrowRightOnRectangleIcon /> : <ArrowLeftOnRectangleIcon />}
+                        </button>
+                         <a href="#" onClick={onLogout} className={`flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-700 transition-colors mt-2 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
                             <LogoutIcon />
-                            <span className="ml-3">Sair</span>
+                            <span className={`ml-3 transition-opacity duration-200 ${isSidebarCollapsed ? 'hidden' : 'block'}`}>Sair</span>
                         </a>
                     </div>
                 </aside>
@@ -463,16 +471,13 @@
             if (!responseText) return null;
             let processedText = responseText;
             if (isDirect) {
-                // Remove Markdown asterisks and replace with strong tags for bolding
                 processedText = responseText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             } else {
-                 // For non-direct, handle more markdown cases
                 processedText = responseText
                     .replace(/### (.*?)\n/g, '<h3>$1</h3>')
                     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                     .replace(/- (.*?)\n/g, '<ul class="list-disc list-inside"><li class="text-gray-700">$1</li></ul>')
             }
-            // General cleanup for newlines
             processedText = processedText.replace(/\n/g, '<br />').replace(/(<br\s*\/?>\s*){3,}/g, '<br /><br />');
 
             return <div className={`space-y-4 text-gray-700 ${isDirect ? 'gemini-response-direct' : 'gemini-response'}`} dangerouslySetInnerHTML={{ __html: processedText }}></div>;
@@ -581,8 +586,6 @@
             );
         };
         
-        // --- MÓDULOS ATUALIZADOS ---
-
         const fileToBase64 = (file) => new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -1309,6 +1312,7 @@
         const MainLayout = ({ user, onLogout }) => {
             const [activeModule, setActiveModule] = React.useState('Dashboard');
             const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+            const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
             const [fraudAlert, setFraudAlert] = React.useState(false);
 
             const handleSelectModule = (moduleId) => {
@@ -1341,6 +1345,8 @@
                         onSelectModule={handleSelectModule} 
                         onLogout={onLogout} 
                         isSidebarOpen={isSidebarOpen} 
+                        isSidebarCollapsed={isSidebarCollapsed}
+                        toggleSidebarCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                         fraudAlert={fraudAlert}
                         closeSidebar={() => setIsSidebarOpen(false)}
                      />
