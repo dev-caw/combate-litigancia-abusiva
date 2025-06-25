@@ -572,8 +572,8 @@
                             riskLevel: text.toLowerCase().includes('crítico') ? 'Crítico' : (text.toLowerCase().includes('alto') ? 'Alto' : 'Médio'),
                             value: 0,
                             details: {
-                                summary: caseText, // Usar o texto inserido pelo usuário como resumo
-                                indicators: text.split('###')[2]?.replace('Pontos de Atenção e Riscos', '').match(/- (.*)/g)?.map(i => i.substring(2)) || [],
+                                summary: caseText,
+                                indicators: text.split('###')[2]?.replace('Pontos de Atenção e Riscos', '').match(/- (.*)/g)?.map(i => i.substring(2).trim()) || [],
                                 documents: []
                             }
                         });
@@ -597,18 +597,18 @@
                     <p className="text-gray-600 mb-6">Descreva os fatos do caso concreto e obtenha um resumo analítico, com a identificação dos riscos e sugestões de estratégias.</p>
                     <div className="bg-white p-6 rounded-lg shadow-md mb-6">
                         <h3 className="text-xl font-semibold text-gray-700 mb-4">1. Identifique o Caso</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
                            <input name="caseNumber" value={newCaseData.caseNumber} onChange={handleInputChange} placeholder="Nº DO PROCESSO" maxLength="25" className="lg:col-span-2 w-full p-2 border border-gray-300 rounded-md"/>
-                           <input name="client" value={newCaseData.client} onChange={handleInputChange} placeholder="CLIENTE" className="w-full p-2 border border-gray-300 rounded-md"/>
-                           <input name="defendant" value={newCaseData.defendant} onChange={handleInputChange} placeholder="PARTE ADVERSA" className="w-full p-2 border border-gray-300 rounded-md"/>
+                           <input name="client" value={newCaseData.client} onChange={handleInputChange} placeholder="CLIENTE" className="lg:col-span-1 w-full p-2 border border-gray-300 rounded-md"/>
+                           <input name="defendant" value={newCaseData.defendant} onChange={handleInputChange} placeholder="PARTE ADVERSA" className="lg:col-span-2 w-full p-2 border border-gray-300 rounded-md"/>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                           <input name="numJuizo" value={newCaseData.numJuizo} onChange={handleInputChange} placeholder="Nº DO JUÍZO" className="w-full p-2 border border-gray-300 rounded-md"/>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+                            <input name="numJuizo" value={newCaseData.numJuizo} onChange={handleInputChange} placeholder="Nº JUÍZO" className="lg:col-span-1 w-full p-2 border border-gray-300 rounded-md"/>
                             <select name="nomeJuizo" value={newCaseData.nomeJuizo} onChange={handleInputChange} className="lg:col-span-2 w-full p-2 border border-gray-300 rounded-md bg-white">
                                 {nomesJuizo.map(nome => <option key={nome} value={nome}>{nome}</option>)}
                             </select>
-                           <input name="comarca" value={newCaseData.comarca} onChange={handleInputChange} placeholder="COMARCA" className="w-full p-2 border border-gray-300 rounded-md"/>
-                            <select name="uf" value={newCaseData.uf} onChange={handleInputChange} className="w-full p-2 border border-gray-300 rounded-md bg-white">
+                           <input name="comarca" value={newCaseData.comarca} onChange={handleInputChange} placeholder="COMARCA" className="lg:col-span-1 w-full p-2 border border-gray-300 rounded-md"/>
+                            <select name="uf" value={newCaseData.uf} onChange={handleInputChange} className="lg:col-span-1 w-full p-2 border border-gray-300 rounded-md bg-white">
                                 {UFs.map(uf => <option key={uf} value={uf}>{uf}</option>)}
                             </select>
                         </div>
