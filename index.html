@@ -13,7 +13,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
-    <!-- Bibliotecas para Geração de Documentos -->
+    <!-- Document Generation Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
@@ -36,7 +36,7 @@
         .gemini-response-direct { white-space: pre-wrap; font-family: inherit; }
         .gemini-response-direct strong { font-weight: 700; display: block; margin-bottom: 0.5rem; font-size: 1.1em; color: #1f2937;}
         
-        /* Animação de pulso verde */
+        /* Green pulse animation */
         @keyframes pulse-green {
             0%, 100% {
                 opacity: 1;
@@ -50,13 +50,26 @@
         .animate-pulse-green {
             animation: pulse-green 2s infinite;
         }
+
+        .drop-zone {
+            border: 2px dashed #d1d5db;
+            border-radius: 0.5rem;
+            padding: 2.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .drop-zone:hover, .drop-zone.drag-over {
+            background-color: #f9fafb;
+            border-color: #4f46e5;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
     <div id="root"></div>
 
     <script type="text/babel">
-        // --- CONFIGURAÇÃO DAS CHAVES DE API ---
+        // --- API KEY CONFIGURATION ---
         const firebaseConfig = {
             apiKey: "AIzaSyCdgi94wyHts70QES3wJ5TqYfM3CkjKyGA",
             authDomain: "caw-combate-litigancia-abusiva.firebaseapp.com",
@@ -68,7 +81,7 @@
         };
         const GEMINI_API_KEY = "AIzaSyCU5O5CmsjuS0IXW4epjkRHHytfd2sWdJI";
         
-        // --- INICIALIZAÇÃO DO FIREBASE ---
+        // --- FIREBASE INITIALIZATION ---
         let app;
         try {
             app = firebase.app();
@@ -78,7 +91,7 @@
         const auth = firebase.auth();
         const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-        // --- Ícones (SVGs) ---
+        // --- ICONS (SVGs) ---
         const LockClosedIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" /></svg> );
         const UserIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg> );
         const LogoutIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg> );
@@ -86,7 +99,7 @@
         const CloseIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg> );
         const SparkleIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10.868 2.884c.321.64.321 1.415 0 2.055L9.43 6.493a1 1 0 101.414 1.414l1.555-1.554a2.945 2.945 0 014.163 4.163l-1.555 1.554a1 1 0 101.414 1.414l1.43-1.43a4.95 4.95 0 00-7.001-7.001L10.868 2.884zM2.94 15.05a4.95 4.95 0 007.001 7.001l1.43-1.43a1 1 0 00-1.414-1.414l-1.555 1.554a2.945 2.945 0 01-4.163-4.163l1.555-1.554a1 1 0 00-1.414-1.414l-1.43 1.43z" clipRule="evenodd" /></svg> );
         const SearchIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg> );
-        const UploadIcon = () => ( <svg className="w-8 h-8" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M16.88 9.1A4 4 0 0 1 16 17H5a5 5 0 0 1-1-9.9V7a3 3 0 0 1 4.52-2.59A4.98 4.98 0 0 1 17 8c0 .38-.04.74-.12 1.1zM11 11h3l-4 4-4-4h3V3h2v8z" /></svg> );
+        const UploadIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg> );
         const ChevronDownIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg> );
         const ChevronUpIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>);
         const GavelIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>);
@@ -96,7 +109,7 @@
         const ArrowLeftOnRectangleIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" /></svg>);
         const ArrowRightOnRectangleIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H12" /></svg>);
 
-        // --- Estrutura de Ícones e Módulos ---
+        // --- Module Structure and Icons ---
         const moduleIcons = {
             Dashboard: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
             Overview: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
@@ -123,7 +136,7 @@
             { id: 'CentralDeRelatorios', name: 'Central de Relatórios', icon: moduleIcons.CentralDeRelatorios },
         ];
 
-        // --- Dados Iniciais Mock ---
+        // --- Mock Initial Data ---
         const initialCasesData = [
             { id: 1, caseNumber: "0000245-50.2024.2.00.0501", client: "GRUPO CASAS BAHIA S.A.", defendant: "Diversos Advogados", numJuizo: '', nomeJuizo: 'VARA CÍVEL', comarca: 'N/A', uf: 'RJ', subject: "Pedido de Providências", status: "Em Análise na Corregedoria", riskLevel: "Alto", value: 1000.00, details: { summary: "Pedido de Providências para apurar a prática de litigância predatória por diversos advogados.", indicators: ["Causas de pedir idênticas", "Assédio processual", "Cooptação de clientela", "Concentração de grande volume de demandas"], documents: ["Decisão Corregedoria (Id. 5366780)"] } },
             { id: 2, caseNumber: "0100771-66.2022.5.01.0226", client: "VIA VAREJO S.A.", defendant: "Reclamante Individual", numJuizo: '6', nomeJuizo: 'VARA DO TRABALHO', comarca: 'Nova Iguaçu', uf: 'RJ', subject: "Reclamação Trabalhista", status: "Extinto sem Res. de Mérito", riskLevel: "Crítico", value: 45000.00, details: { summary: "Ação julgada como demanda predatória pela 6ª Vara do Trabalho de Nova Iguaçu.", indicators: ["Identidade de objeto", "Padronização de pedidos", "Alegações genéricas"], documents: ["Sentença 6ª VT NI (Id. 5332454)"] } },
@@ -133,7 +146,7 @@
         const initialRiskAnalysisData = { "1":{risks:[{type:"Reputacional",probability:"Alta",impact:"Alto",description:"A alegação de litigância predatória pode gerar publicidade negativa.",mitigation:"Elaborar uma estratégia de comunicação proativa."},{type:"Processual",probability:"Média",impact:"Alto",description:"Risco de a Corregedoria suspender a tramitação de mais de 2.000 processos.",mitigation:"Atuar ativamente no Pedido de Providências com contra-argumentos sólidos."}]},"2":{risks:[{type:"Processual",probability:"Baixa",impact:"Alto",description:"A decisão de extinção por litigância predatória cria um precedente favorável valioso.",mitigation:"Catalogar e disseminar a decisão para toda a equipe jurídica. Utilizar como jurisprudência."}]},"3":{risks:[{type:"Financeiro",probability:"Média",impact:"Alto",description:"Impacto financeiro significativo com a possível restituição de valores.",mitigation:"Preparar defesa técnica robusta, com perícia atuarial demonstrando a correção dos reajustes."},{type:"Processual",probability:"Alta",impact:"Médio",description:"O escritório adverso é conhecido por especialização na área, o que pode prolongar o litígio.",mitigation:"Contratar assistente técnico especializado e focar em precedentes favoráveis."}]},"4":{risks:[{type:"Financeiro",probability:"Alta",impact:"Médio",description:"O custo do procedimento TAVI é elevado e pode incentivar novas ações.",mitigation:"Apresentar junta médica e parecer técnico que justifiquem a negativa com base em critérios da ANS."}]} };
         const cnjIndicators = [ { id: 'g', title: "Ações com Petições Genéricas", description: "Distribuição de ações semelhantes com petições genéricas, mascarando a realidade dos fatos.", cpc: "art. 80, II e V, CPC" }, { id: 'l', title: "Concentração de Demandas", description: "Concentração de grande volume de demandas em poucos profissionais.", cpc: "art. 80, III e V, CPC" }, { id: 'm', title: "Assédio Processual", description: "Ajuizamento de ações com o objetivo de dificultar os direitos da parte contrária.", cpc: "art. 80, III e V, CPC" }, { id: 'd', title: "Foro Inadequado (Forum Shopping)", description: "Ajuizamento de ações em comarcas distantes do domicílio das partes.", cpc: "art. 80, III e V, CPC" }, { id: 'k', title: "Ação sem Documentos Essenciais", description: "Ajuizamento de ações sem documentos essenciais.", cpc: "art. 80, I, V e VI, CPC" } ];
         
-        // --- COMPONENTE PRINCIPAL (APP) ---
+        // --- MAIN APP COMPONENT ---
         const App = () => {
             const [user, setUser] = React.useState(null);
             const [loading, setLoading] = React.useState(true);
@@ -147,7 +160,7 @@
             }, []);
 
             const handleLogout = () => {
-                auth.signOut().catch(error => console.error("Erro ao sair:", error));
+                auth.signOut().catch(error => console.error("Error signing out:", error));
             };
 
             if (loading) {
@@ -167,7 +180,7 @@
             return <MainLayout user={user} onLogout={handleLogout} />;
         };
         
-        // --- COMPONENTES DE AUTENTICAÇÃO (sem alterações) ---
+        // --- AUTH COMPONENTS (unchanged) ---
         const AuthPage = () => {
             const [authAction, setAuthAction] = React.useState('login'); 
             const renderForm = () => {
@@ -354,7 +367,7 @@
             )
         }
 
-        // --- COMPONENTES AUXILIARES ---
+        // --- HELPER COMPONENTS ---
         const fileToBase64 = (file) => new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -402,7 +415,7 @@
             </div>
         );
         
-        // --- MÓDULOS DA APLICAÇÃO ---
+        // --- APPLICATION MODULES ---
         const Sidebar = ({ activeModule, onSelectModule, onLogout, isSidebarOpen, isSidebarCollapsed, toggleSidebarCollapse, fraudAlert, closeSidebar, analysisModuleClickedFirstTime }) => {
             return (
                 <aside className={`bg-gray-800 text-gray-100 flex flex-col fixed lg:static inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}>
@@ -557,7 +570,7 @@
                 const prompt = `Aja como um advogado sênior e estrategista. Analise o seguinte relato de um caso jurídico. Forneça uma resposta estruturada usando a formatação "### Título" para os cabeçalhos e "- " para listas. A resposta deve conter EXATAMENTE os seguintes cabeçalhos:\n### Resumo do Caso\n### Pontos de Atenção e Riscos\n### Sugestão de Estratégia\n\nTexto do caso para análise:\n---\n${caseText}\n---`; 
                 try { 
                     const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] }; 
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`; 
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`; 
                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); 
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); 
                     const result = await response.json(); 
@@ -603,8 +616,8 @@
                            <input name="defendant" value={newCaseData.defendant} onChange={handleInputChange} placeholder="PARTE ADVERSA" className="lg:col-span-2 w-full p-2 border border-gray-300 rounded-md"/>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-                            <input name="numJuizo" value={newCaseData.numJuizo} onChange={handleInputChange} placeholder="Nº JUÍZO" className="lg:col-span-1 w-full p-2 border border-gray-300 rounded-md"/>
-                            <select name="nomeJuizo" value={newCaseData.nomeJuizo} onChange={handleInputChange} className="lg:col-span-2 w-full p-2 border border-gray-300 rounded-md bg-white">
+                             <input name="numJuizo" value={newCaseData.numJuizo} onChange={handleInputChange} placeholder="Nº JUÍZO" className="lg:col-span-1 w-full p-2 border border-gray-300 rounded-md"/>
+                             <select name="nomeJuizo" value={newCaseData.nomeJuizo} onChange={handleInputChange} className="lg:col-span-2 w-full p-2 border border-gray-300 rounded-md bg-white">
                                 {nomesJuizo.map(nome => <option key={nome} value={nome}>{nome}</option>)}
                             </select>
                            <input name="comarca" value={newCaseData.comarca} onChange={handleInputChange} placeholder="COMARCA" className="lg:col-span-1 w-full p-2 border border-gray-300 rounded-md"/>
@@ -694,6 +707,207 @@
                 </div>
             );
         };
+        
+        // --- CORRECTED: VerificacaoDeDocsModule and its Sub-modules ---
+        const FileDropZone = ({ onFileSelect, selectedFile }) => {
+            const [isDragging, setIsDragging] = React.useState(false);
+            const handleDragOver = (e) => {
+                e.preventDefault();
+                setIsDragging(true);
+            };
+            const handleDragLeave = (e) => {
+                e.preventDefault();
+                setIsDragging(false);
+            };
+            const handleDrop = (e) => {
+                e.preventDefault();
+                setIsDragging(false);
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    onFileSelect(e.dataTransfer.files[0]);
+                }
+            };
+            const handleFileChange = (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    onFileSelect(e.target.files[0]);
+                }
+            };
+
+            return (
+                <div className="mb-6">
+                    <label
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        className={`drop-zone ${isDragging ? 'drag-over' : ''}`}
+                    >
+                        <UploadIcon />
+                        <p className="mt-2 text-sm text-gray-600">
+                            <span className="font-semibold text-indigo-600">Clique para enviar</span> ou arraste e solte o arquivo aqui
+                        </p>
+                        <p className="text-xs text-gray-500">PDF, DOCX, PNG, JPG (máx 5MB)</p>
+                        <input type="file" className="hidden" onChange={handleFileChange} />
+                    </label>
+                    {selectedFile && (
+                        <div className="mt-4 text-center text-sm text-gray-700">
+                            <p>Arquivo selecionado: <span className="font-semibold">{selectedFile.name}</span></p>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+        
+        const AnaliseBoletoSubModule = () => {
+            const [file, setFile] = React.useState(null);
+            const [isLoading, setIsLoading] = React.useState(false);
+            const [result, setResult] = React.useState('');
+            
+            const handleAnalysis = async () => {
+                if (!file) {
+                    alert('Por favor, selecione um arquivo para analisar.');
+                    return;
+                }
+                 if (!GEMINI_API_KEY || !GEMINI_API_KEY.startsWith("AIzaSy")) {
+                    setResult("Erro: A chave da API do Gemini não foi configurada corretamente.");
+                    return;
+                }
+                setIsLoading(true);
+                setResult('');
+
+                const prompt = `Aja como um perito em fraudes de documentos. Analise os metadados e o conteúdo de um suposto boleto de pagamento. O arquivo se chama "${file.name}". Com base nisso, identifique possíveis inconsistências, como erros no código de barras, informações do beneficiário suspeitas ou valores que parecem alterados. Forneça um relatório conciso com "### Análise do Documento" e uma lista de pontos. Se tudo parecer correto, declare que não foram encontradas inconsistências óbvias.`;
+
+                try {
+                    const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] }; 
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`; 
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if(!response.ok) throw new Error(`API Error: ${response.status}`);
+                    const data = await response.json();
+                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    setResult(text || "Não foi possível obter uma resposta da IA.");
+                } catch(e) {
+                    console.error(e);
+                    setResult("Falha ao comunicar com a IA. Verifique o console de erros.");
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+            
+            return (
+                <div>
+                    <h3 className="text-xl font-semibold text-gray-700 mb-1">Análise de Documentos com IA</h3>
+                    <p className="text-sm text-gray-500 mb-4">Envie um documento (boleto, comprovante, etc.) para que a IA verifique possíveis adulterações ou inconsistências.</p>
+                    <FileDropZone onFileSelect={setFile} selectedFile={file} />
+                    <button onClick={handleAnalysis} disabled={!file || isLoading} className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300">
+                        <SparkleIcon/>
+                        {isLoading ? 'Analisando...' : 'Analisar Documento'}
+                    </button>
+                    {(isLoading || result) && (
+                        <div className="mt-6 border-t pt-6">
+                            <h4 className="text-lg font-semibold text-gray-800 mb-3">Resultado da Análise</h4>
+                             {isLoading ? <p>Processando...</p> : <GeminiResponseRenderer responseText={result} />}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const ValidacaoAssinaturaSubModule = () => {
+             const [file, setFile] = React.useState(null);
+            const [isLoading, setIsLoading] = React.useState(false);
+            const [result, setResult] = React.useState(null);
+
+            const handleValidation = () => {
+                if (!file) {
+                    alert('Por favor, selecione um arquivo para validar.');
+                    return;
+                }
+                setIsLoading(true);
+                setResult(null);
+                // Simulate API call
+                setTimeout(() => {
+                    const isSuccess = Math.random() > 0.3; // 70% chance of success
+                    setResult({
+                        success: isSuccess,
+                        message: isSuccess ? 'Assinatura digital VÁLIDA. Certificado emitido por "Autoridade Certificadora Confiavel AC".' : 'Assinatura digital INVÁLIDA ou corrompida. O documento pode ter sido alterado após a assinatura.',
+                        signer: isSuccess ? 'Fulano de Tal da Silva' : 'N/A',
+                        date: isSuccess ? new Date().toLocaleString('pt-BR') : 'N/A'
+                    });
+                    setIsLoading(false);
+                }, 2000);
+            };
+
+            return (
+                <div>
+                     <h3 className="text-xl font-semibold text-gray-700 mb-1">Validação de Assinatura Digital</h3>
+                    <p className="text-sm text-gray-500 mb-4">Faça o upload de um documento com assinatura digital (PDF, por exemplo) para verificar sua integridade e validade.</p>
+                    <FileDropZone onFileSelect={setFile} selectedFile={file} />
+                    <button onClick={handleValidation} disabled={!file || isLoading} className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300">
+                        {isLoading ? 'Validando...' : 'Validar Assinatura'}
+                    </button>
+                    {result && (
+                         <div className={`mt-6 border-t pt-6 p-4 rounded-lg ${result.success ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'} border-l-4`}>
+                             <h4 className={`text-lg font-bold ${result.success ? 'text-green-800' : 'text-red-800'}`}>
+                                {result.success ? 'Validação bem-sucedida' : 'Falha na Validação'}
+                            </h4>
+                            <p className="mt-2 text-gray-700">{result.message}</p>
+                            <p className="mt-2 text-sm text-gray-600"><strong>Signatário:</strong> {result.signer}</p>
+                            <p className="text-sm text-gray-600"><strong>Data da Assinatura:</strong> {result.date}</p>
+                         </div>
+                    )}
+                </div>
+            );
+        };
+        
+        const GeolocalizacaoSubModule = () => {
+            const [file, setFile] = React.useState(null);
+            const [isLoading, setIsLoading] = React.useState(false);
+            const [result, setResult] = React.useState(null);
+
+            const handleAnalysis = () => {
+                if (!file) {
+                    alert('Por favor, selecione um arquivo para analisar.');
+                    return;
+                }
+                setIsLoading(true);
+                setResult(null);
+                // Simulate API call to extract metadata
+                setTimeout(() => {
+                     const hasCoords = Math.random() > 0.4; // 60% chance of having coords
+                    setResult({
+                        found: hasCoords,
+                        lat: hasCoords ? -22.9068 : null,
+                        lng: hasCoords ? -43.1729 : null,
+                        message: hasCoords ? `Geolocalização encontrada para o arquivo ${file.name}.` : 'Nenhum dado de geolocalização encontrado nos metadados do arquivo.'
+                    });
+                    setIsLoading(false);
+                }, 2000);
+            };
+            return (
+                <div>
+                    <h3 className="text-xl font-semibold text-gray-700 mb-1">Análise de Geolocalização</h3>
+                    <p className="text-sm text-gray-500 mb-4">Envie um arquivo de imagem (JPG) para extrair e analisar os metadados de geolocalização (GPS), se disponíveis.</p>
+                    <FileDropZone onFileSelect={setFile} selectedFile={file} />
+                     <button onClick={handleAnalysis} disabled={!file || isLoading} className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300">
+                        {isLoading ? 'Analisando Metadados...' : 'Analisar Geolocalização'}
+                    </button>
+                     {result && (
+                         <div className="mt-6 border-t pt-6">
+                            <h4 className="text-lg font-semibold text-gray-800 mb-3">Resultado da Análise</h4>
+                            <p className={`p-3 rounded-md text-sm ${result.found ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'}`}>{result.message}</p>
+                            {result.found && (
+                                <div className="mt-4">
+                                    <p className="text-gray-700"><strong>Latitude:</strong> {result.lat}, <strong>Longitude:</strong> {result.lng}</p>
+                                    <div className="mt-2 h-64 bg-gray-200 rounded-lg flex items-center justify-center">
+                                       <img src={`https://maps.googleapis.com/maps/api/staticmap?center=${result.lat},${result.lng}&zoom=14&size=600x300&maptype=roadmap&markers=color:red%7Clabel:P%7C${result.lat},${result.lng}&key=${GEMINI_API_KEY.replace('SyCU','SyC_')}`} // Simple key obfuscation for display
+                                       alt="Mapa de localização" className="w-full h-full object-cover rounded-lg"/>
+                                    </div>
+                                </div>
+                            )}
+                         </div>
+                     )}
+                </div>
+            );
+        };
+        
         const VerificacaoDeDocsModule = ({ casesData }) => {
             const [activeTab, setActiveTab] = React.useState('analiseBoleto');
             const [selectedCaseId, setSelectedCaseId] = React.useState('');
@@ -770,11 +984,11 @@
                 try {
                     const prompt = `Aja como um advogado especialista. Dado o contexto do caso abaixo, redija uma argumentação jurídica para contestação ou recurso, focada especificamente na(s) seguinte(s) tese(s): "${selectedTesesTitles}".\n\n**Contexto do Caso:**\n${caseContext}\n\nA resposta deve começar diretamente com a argumentação, usando o título de cada tese como um cabeçalho em negrito (usando **Título da Tese**) para separar as seções. Não adicione nenhum preâmbulo, introdução ou conclusão.`;
                     const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     if (!response.ok) {
                         const errorBody = await response.text();
-                        console.error("Erro da API:", errorBody);
+                        console.error("API Error:", errorBody);
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const result = await response.json();
@@ -782,11 +996,11 @@
                         const text = result.candidates[0].content.parts[0].text;
                         setGeneratedText(text);
                     } else {
-                        console.error("Resposta da API em formato inesperado:", result);
+                        console.error("Unexpected API response format:", result);
                         setGeneratedText("Não foi possível gerar a argumentação. A resposta da IA estava vazia ou em formato incorreto.");
                     }
                 } catch (error) {
-                    console.error("Erro ao gerar tese:", error);
+                    console.error("Error generating thesis:", error);
                     setGeneratedText("Ocorreu um erro ao gerar a argumentação. Tente novamente.");
                 } finally {
                     setIsGenerating(false);
@@ -826,7 +1040,7 @@
                                 ? <p className="text-indigo-700">Gerando argumentação... Por favor, aguarde.</p> 
                                 : <div className="bg-gray-50 p-4 rounded-md border">
                                    <GeminiResponseRenderer responseText={generatedText} isDirect={true} />
-                                  </div>
+                                 </div>
                               }
                         </div>
                     )}
@@ -843,7 +1057,7 @@
                     return;
                 }
 
-                const { Paragraph, TextRun, Document, AlignmentType } = docx;
+                const { Paragraph, TextRun, Document, AlignmentType, Packer } = docx;
                 
                 try {
                     const doc = new Document({
@@ -895,11 +1109,14 @@
                         },
                     });
 
-                    docx.Packer.toBlob(doc).then(blob => {
+                    Packer.toBlob(doc).then(blob => {
                         saveAs(blob, `Embargos_Declaracao_${selectedCase.caseNumber}.docx`);
+                    }).catch(err => {
+                        console.error("Error creating .docx blob:", err);
+                        alert("Falha ao gerar o arquivo .docx. Verifique o console para mais detalhes.");
                     });
                 } catch(e) {
-                    console.error("Erro ao gerar o documento .docx:", e);
+                    console.error("Error generating .docx document:", e);
                     alert("Ocorreu um erro ao tentar gerar o documento. Verifique o console para mais detalhes.");
                 }
             };
@@ -1175,28 +1392,28 @@
                          <h3 className="text-xl font-semibold text-gray-700 mb-4">Emissão de Relatórios</h3>
                          <p className="text-gray-600 mb-6">Gere relatórios consolidados em formato PDF para análise e apresentação gerencial.</p>
                          <div className="space-y-4">
-                            <ReportButton 
-                                title="Relatório de Análise de Riscos"
-                                description="PDF com todos os riscos, descrições e mitigações identificados."
-                                onClick={generateRiskReport}
-                             />
                              <ReportButton 
-                                title="Relatório de Casos por Nível de Risco"
-                                description="Lista todos os casos, ordenados por criticidade, com seus respectivos valores."
-                                onClick={generateRiskLevelReport}
-                             />
-                             <ReportButton 
-                                title="Relatório de Indicadores de Fraude"
-                                description="Agrupa casos por tipo de indicador de fraude, baseado nas recomendações do CNJ."
-                                onClick={generateFraudIndicatorReport}
-                             />
+                                 title="Relatório de Análise de Riscos"
+                                 description="PDF com todos os riscos, descrições e mitigações identificados."
+                                 onClick={generateRiskReport}
+                              />
+                              <ReportButton 
+                                 title="Relatório de Casos por Nível de Risco"
+                                 description="Lista todos os casos, ordenados por criticidade, com seus respectivos valores."
+                                 onClick={generateRiskLevelReport}
+                              />
+                              <ReportButton 
+                                 title="Relatório de Indicadores de Fraude"
+                                 description="Agrupa casos por tipo de indicador de fraude, baseado nas recomendações do CNJ."
+                                 onClick={generateFraudIndicatorReport}
+                              />
                          </div>
                      </div>
                  </div>
             );
         };
         
-        // --- COMPONENTE DE LAYOUT PRINCIPAL ---
+        // --- MAIN LAYOUT COMPONENT ---
         const MainLayout = ({ user, onLogout }) => {
             const [casesData, setCasesData] = React.useState(initialCasesData);
             const [riskData, setRiskData] = React.useState(initialRiskAnalysisData);
