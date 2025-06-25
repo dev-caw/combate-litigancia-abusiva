@@ -1058,29 +1058,38 @@
                 }
 
                 const { Paragraph, TextRun, Document, AlignmentType, Packer } = docx;
-                
+                const today = new Date();
+                const formattedDate = `${today.getDate()} de ${today.toLocaleString('pt-BR', { month: 'long' })} de ${today.getFullYear()}`;
+
                 try {
                     const doc = new Document({
                         sections: [{
                             children: [
-                                new Paragraph({ text: `JUÍZADO ESPECIAL CÍVEL DA COMARCA DE ${selectedCase.comarca.toUpperCase()}`, style: "default" }),
-                                new Paragraph({ text: `Processo: ${selectedCase.caseNumber}`, style: "default" }),
+                                new Paragraph({ text: `DOUTOR JUÍZO DO ${selectedCase.numJuizo ? selectedCase.numJuizo + 'º' : ''} ${selectedCase.nomeJuizo.toUpperCase()} DA COMARCA DE ${selectedCase.comarca.toUpperCase()}`, style: "default", alignment: AlignmentType.LEFT }),
+                                new Paragraph({ text: `Processo: ${selectedCase.caseNumber}`, style: "default", alignment: AlignmentType.LEFT }),
+                                new Paragraph({ text: `Parte contrária: ${selectedCase.defendant}`, style: "default", alignment: AlignmentType.LEFT }),
                                 new Paragraph({ text: "\n" }),
                                 new Paragraph({
                                     children: [
                                         new TextRun({ text: selectedCase.client.toUpperCase(), bold: true }),
                                         new TextRun({ text: ", parte ré nestes autos, vem, por seu advogado, tendo em vista omissão na respeitável sentença, que, diante da desistência da ação pela parte autora, extinguiu o processo sem resolução do mérito, opor contra ela os presentes", }),
                                     ],
+                                    alignment: AlignmentType.JUSTIFIED,
+                                    indentation: { firstLine: 720 },
                                 }),
                                 new Paragraph({ text: "\n" }),
                                 new Paragraph({ text: "EMBARGOS DE DECLARAÇÃO,", alignment: AlignmentType.CENTER, style: "strong" }),
-                                 new Paragraph({ text: "\n" }),
+                                new Paragraph({ text: "\n" }),
                                 new Paragraph({ text: "o que faz com fundamento nos artigos 1.022 e seguinte do Código de Processo Civil, e no Enunciado Cível número 90, do FONAJE.", style: "justify", indentation: { firstLine: 720 } }),
                                 new Paragraph({ text: "A embargante, assim como várias outras empresas de grande porte, enfrenta um grande volume de ações artificiais.", style: "justify", indentation: { firstLine: 720 } }),
                                 new Paragraph({ text: "Com o objetivo de aprimorar a gestão de demandas repetitivas e ações de massa, o Supremo Tribunal Federal (STF) e o CNJ criaram unidades para melhor acompanhamento e controle dessas demandas.", style: "justify", indentation: { firstLine: 720 } }),
-                                 new Paragraph({ text: `O que se tem visto, em boa quantidade, é a simples desistência da ação quando se verifica que o réu (${selectedCase.client}) bloqueou com eficiência as alegações autorais, e apresentou prova documental suficiente para aniquilar o direito pleiteado.`, style: "justify", indentation: { firstLine: 720 } }),
-                                 new Paragraph({ text: `Essas desistências, exercitadas depois de apresentada contestação, devidamente subsidiada por documentos que eliminam a pretensão autoral, é simples má-fé, já que a verdadeira intenção é, uma vez fracassada a estratégia inicial, a de se evitar uma sentença de improcedência, a coisa julgada e a inevitável sanção financeira pela deslealdade processual.`, style: "justify", indentation: { firstLine: 720 } }),
-                                 new Paragraph({
+                                new Paragraph({ text: "No CNJ foi criado o Centro de Inteligência do Poder Judiciário (CIPJ), cuja finalidade é propor a replicação de julgamento paradigma em demandas repetitivas identificadas. Além disso, o CNJ também dispõe da Rede de Centros de Inteligência do Poder Judiciário, que integra Tribunais de Justiça de todo País.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "Em nota relatada pelo Juiz Paulo Luciano Maia Marques, datada de 27 de janeiro de 2021, através do Centro de Inteligência dos Juizados Especiais do Poder Judiciário do Estado do Rio Grande do Norte, foi apresentado um retrato da importante realidade das ações que são produzidas artificialmente no País.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "São milhares de ações pré-fabricadas e ajuizadas diariamente, em busca de enriquecimento ilícito ou declaração da inexigibilidade de dívidas legitimamente contraídas.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "Não se pode negar que, no exercício e na operação dos direitos e processos de massa que envolvem as relações de consumo, possível dificuldade em se produzir provas, em decorrência do volume, é aproveitada por muitos operadores do Direito, que apostam nessas momentâneas dificuldades para ganhar a ação judicial.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: `E o que se tem visto, em boa quantidade, é a simples desistência da ação quando se verifica que o réu bloqueou com eficiência as alegações autorais, e apresentou prova documental suficiente para aniquilar o direito pleiteado.`, style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "Essas desistências, exercitadas depois de apresentada contestação, devidamente subsidiada por documentos que eliminam a pretensão autoral, é simples má-fé, já que a verdadeira intenção é, uma vez fracassada a estratégia inicial, a de se evitar uma sentença de improcedência, a coisa julgada e a inevitável sanção financeira pela deslealdade processual, possibilitando à parte autora, se deferido o seu pedido, investir mais uma vez contra todos, valendo-se dos mesmos argumentos artificiais produzidos.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({
                                     children: [
                                         new TextRun({ text: "Aqui não está a embargante formulando uma resistência ao entendimento sedimentado de que, nos processos regidos pela Lei 9.099, a desistência da ação independe da anuência da parte acionada, embora, data maxima venia, entenda que pudesse fazê-lo, considerando as circunstâncias da desistência, embasada não apenas no artigo 485, § 4º, do Código de Processo Civil, mas também na nova redação do Enunciado Civil número 90 do FONAJE, que assim estabeleceu:", }),
                                     ],
@@ -1092,11 +1101,14 @@
                                     indentation: { left: 720, right: 720 },
                                     style: "quote"
                                 }),
-                                 new Paragraph({ text: "Por tudo isso, o que se busca com esses embargos é a retificação da sentença, que, gerada pelo malicioso pedido de desistência, apenas extinguiu o feito sem considerar a contestação juntada aos autos, acompanhada de todos os documentos que demonstram que a parte autora alterou a verdade dos fatos para tentar alcançar ganho de forma ilegal.", style: "justify", indentation: { firstLine: 720 } }),
-                                new Paragraph({ text: `Por esses fundamentos, com ênfase para nova redação do Enunciado Civil número 90 do FONAJE, requer-se recebimento dos presentes embargos, acolhendo-os para, sanando a omissão, conheça do mérito da causa e da má-fé da parte autora, retificando a sentença embargada para julgar improcedentes os pedidos iniciais, impondo à parte autora o pagamento de multa, conforme art. 81 do Código de Processo Civil, mais custas processuais e honorários advocatícios.`, style: "justify", indentation: { firstLine: 720 } }),
-                                 new Paragraph({ text: "\nNestes termos,", alignment: AlignmentType.CENTER }),
-                                 new Paragraph({ text: "Pede deferimento.", alignment: AlignmentType.CENTER }),
-                                 new Paragraph({ text: `\n${selectedCase.comarca}, ${new Date().toLocaleDateString('pt-BR')}.`, alignment: AlignmentType.CENTER }),
+                                new Paragraph({ text: "Por tudo isso, o que se busca com esses embargos é a retificação da sentença, que, gerada pelo malicioso pedido de desistência, apenas extinguiu o feito sem considerar a contestação juntada aos autos, acompanhada de todos os documentos que demonstram que a parte autora alterou a verdade dos fatos para tentar alcançar ganho de forma ilegal, movimentando a máquina do Judiciário irresponsavelmente, causando, com isso, prejuízo injustificável a todos os envolvidos.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "Sendo, portanto, a desistência uma manobra desleal da parte autora, também fruto da sua má-fé processual, a sentença, indubitavelmente, deveria ter sido de mérito, com aplicação das sanções processuais cabíveis.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "A intenção aqui é nobre, corrige os rumos e melhora o Direito.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "Vossa Excelência pode perceber que a contestação e os documentos que a acompanham são suficientes para a prolação de uma sentença de improcedência.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "Por esses fundamentos, com ênfase para nova redação do Enunciado Civil número 90 do FONAJE, requer-se recebimento dos presentes embargos, acolhendo-os para, sanando a omissão, conheça do mérito da causa e da má-fé da parte autora, retificando a sentença embargada para julgar improcedentes os pedidos iniciais, impondo à parte autora o pagamento de multa, conforme art. 81 do Código de Processo Civil, mais custas processuais e honorários advocatícios.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "\nNestes termos,", alignment: AlignmentType.CENTER }),
+                                new Paragraph({ text: "Pede deferimento.", alignment: AlignmentType.CENTER }),
+                                new Paragraph({ text: `\n${selectedCase.comarca}, ${formattedDate}.`, alignment: AlignmentType.CENTER }),
                             ],
                         }],
                         styles: {
