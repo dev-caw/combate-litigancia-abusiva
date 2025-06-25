@@ -451,7 +451,7 @@
             <div>
                 <img src="https://dev-caw.github.io/combate-litigancia-abusiva/img/combate.png" alt="Banner Combate à Litigância Abusiva" style={{ padding: '20px 25%' }} />
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {modules.filter(m => m.id !== 'Dashboard').map((module) => (
+                    {modules.filter(m => m.id !== 'Dashboard' && m.id !== 'Overview').map((module) => (
                         <div key={module.id} className="relative bg-white p-6 rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer flex flex-col items-center text-center" onClick={() => onSelectModule(module.id)}>
                             {module.id === 'AnáliseDeDados' && !analysisModuleClickedFirstTime && (
                                 <span className="absolute top-0 right-0 -mt-2 -mr-2 px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full shadow-lg">Comece por aqui</span>
@@ -542,7 +542,7 @@
             };
 
             const handleAnalyzeWithAI = async () => { 
-                if (!caseText.trim() || Object.values(newCaseData).some(x => x === '')) {
+                if (!caseText.trim() || !newCaseData.caseNumber || !newCaseData.client || !newCaseData.defendant || !newCaseData.nomeJuizo || !newCaseData.comarca || !newCaseData.uf) {
                      setError("Por favor, preencha todos os campos de identificação e descrição do caso.");
                      return;
                 }
@@ -597,12 +597,14 @@
                     <p className="text-gray-600 mb-6">Descreva os fatos do caso concreto e obtenha um resumo analítico, com a identificação dos riscos e sugestões de estratégias.</p>
                     <div className="bg-white p-6 rounded-lg shadow-md mb-6">
                         <h3 className="text-xl font-semibold text-gray-700 mb-4">1. Identifique o Caso</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                           <input name="caseNumber" value={newCaseData.caseNumber} onChange={handleInputChange} placeholder="Nº DO PROCESSO" maxLength="25" className="w-full p-2 border border-gray-300 rounded-md"/>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                           <input name="caseNumber" value={newCaseData.caseNumber} onChange={handleInputChange} placeholder="Nº DO PROCESSO" maxLength="25" className="lg:col-span-2 w-full p-2 border border-gray-300 rounded-md"/>
                            <input name="client" value={newCaseData.client} onChange={handleInputChange} placeholder="CLIENTE" className="w-full p-2 border border-gray-300 rounded-md"/>
                            <input name="defendant" value={newCaseData.defendant} onChange={handleInputChange} placeholder="PARTE ADVERSA" className="w-full p-2 border border-gray-300 rounded-md"/>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                            <input name="numJuizo" value={newCaseData.numJuizo} onChange={handleInputChange} placeholder="Nº DO JUÍZO" className="w-full p-2 border border-gray-300 rounded-md"/>
-                            <select name="nomeJuizo" value={newCaseData.nomeJuizo} onChange={handleInputChange} className="w-full p-2 border border-gray-300 rounded-md bg-white">
+                            <select name="nomeJuizo" value={newCaseData.nomeJuizo} onChange={handleInputChange} className="lg:col-span-2 w-full p-2 border border-gray-300 rounded-md bg-white">
                                 {nomesJuizo.map(nome => <option key={nome} value={nome}>{nome}</option>)}
                             </select>
                            <input name="comarca" value={newCaseData.comarca} onChange={handleInputChange} placeholder="COMARCA" className="w-full p-2 border border-gray-300 rounded-md"/>
@@ -843,58 +845,63 @@
 
                 const { Paragraph, TextRun, Document, AlignmentType } = docx;
                 
-                const doc = new Document({
-                    sections: [{
-                        children: [
-                            new Paragraph({ text: `JUÍZADO ESPECIAL CÍVEL DA COMARCA DE ${selectedCase.comarca.toUpperCase()}`, style: "default" }),
-                            new Paragraph({ text: `Processo: ${selectedCase.caseNumber}`, style: "default" }),
-                            new Paragraph({ text: "\n" }),
-                            new Paragraph({
-                                children: [
-                                    new TextRun({ text: selectedCase.client.toUpperCase(), bold: true }),
-                                    new TextRun({ text: ", parte ré nestes autos, vem, por seu advogado, tendo em vista omissão na respeitável sentença, que, diante da desistência da ação pela parte autora, extinguiu o processo sem resolução do mérito, opor contra ela os presentes", }),
-                                ],
-                            }),
-                            new Paragraph({ text: "\n" }),
-                            new Paragraph({ text: "EMBARGOS DE DECLARAÇÃO,", alignment: AlignmentType.CENTER, style: "strong" }),
-                             new Paragraph({ text: "\n" }),
-                            new Paragraph({ text: "o que faz com fundamento nos artigos 1.022 e seguinte do Código de Processo Civil, e no Enunciado Cível número 90, do FONAJE.", style: "justify", indentation: { firstLine: 720 } }),
-                            new Paragraph({ text: "A embargante, assim como várias outras empresas de grande porte, enfrenta um grande volume de ações artificiais.", style: "justify", indentation: { firstLine: 720 } }),
-                            new Paragraph({ text: "Com o objetivo de aprimorar a gestão de demandas repetitivas e ações de massa, o Supremo Tribunal Federal (STF) e o CNJ criaram unidades para melhor acompanhamento e controle dessas demandas.", style: "justify", indentation: { firstLine: 720 } }),
-                             new Paragraph({ text: `O que se tem visto, em boa quantidade, é a simples desistência da ação quando se verifica que o réu (${selectedCase.client}) bloqueou com eficiência as alegações autorais, e apresentou prova documental suficiente para aniquilar o direito pleiteado.`, style: "justify", indentation: { firstLine: 720 } }),
-                             new Paragraph({ text: `Essas desistências, exercitadas depois de apresentada contestação, devidamente subsidiada por documentos que eliminam a pretensão autoral, é simples má-fé, já que a verdadeira intenção é, uma vez fracassada a estratégia inicial, a de se evitar uma sentença de improcedência, a coisa julgada e a inevitável sanção financeira pela deslealdade processual.`, style: "justify", indentation: { firstLine: 720 } }),
-                             new Paragraph({
-                                children: [
-                                    new TextRun({ text: "Aqui não está a embargante formulando uma resistência ao entendimento sedimentado de que, nos processos regidos pela Lei 9.099, a desistência da ação independe da anuência da parte acionada, embora, data maxima venia, entenda que pudesse fazê-lo, considerando as circunstâncias da desistência, embasada não apenas no artigo 485, § 4º, do Código de Processo Civil, mas também na nova redação do Enunciado Civil número 90 do FONAJE, que assim estabeleceu:", }),
-                                ],
-                                indentation: { firstLine: 720 },
-                                style: "justify",
-                            }),
-                             new Paragraph({
-                                text: `"A desistência da ação, mesmo sem a anuência do réu já citado, implicará a extinção do processo sem resolução do mérito, ainda que tal ato se dê em audiência de instrução e julgamento, salvo quando houver indícios de litigância de má-fé ou lide temerária"`,
-                                indentation: { left: 720, right: 720 },
-                                style: "quote"
-                            }),
-                             new Paragraph({ text: "Por tudo isso, o que se busca com esses embargos é a retificação da sentença, que, gerada pelo malicioso pedido de desistência, apenas extinguiu o feito sem considerar a contestação juntada aos autos, acompanhada de todos os documentos que demonstram que a parte autora alterou a verdade dos fatos para tentar alcançar ganho de forma ilegal.", style: "justify", indentation: { firstLine: 720 } }),
-                            new Paragraph({ text: `Por esses fundamentos, com ênfase para nova redação do Enunciado Civil número 90 do FONAJE, requer-se recebimento dos presentes embargos, acolhendo-os para, sanando a omissão, conheça do mérito da causa e da má-fé da parte autora, retificando a sentença embargada para julgar improcedentes os pedidos iniciais, impondo à parte autora o pagamento de multa, conforme art. 81 do Código de Processo Civil, mais custas processuais e honorários advocatícios.`, style: "justify", indentation: { firstLine: 720 } }),
-                             new Paragraph({ text: "\nNestes termos,", alignment: AlignmentType.CENTER }),
-                             new Paragraph({ text: "Pede deferimento.", alignment: AlignmentType.CENTER }),
-                             new Paragraph({ text: `\n${selectedCase.comarca}, ${new Date().toLocaleDateString('pt-BR')}.`, alignment: AlignmentType.CENTER }),
-                        ],
-                    }],
-                    styles: {
-                        paragraphStyles: [
-                            { id: "default", name: "Default", run: { size: 24, font: "Times New Roman" } },
-                            { id: "strong", name: "Strong", run: { size: 24, font: "Times New Roman", bold: true } },
-                            { id: "quote", name: "Quote", run: { size: 22, font: "Times New Roman", italics: true } },
-                            { id: "justify", name: "Justify", alignment: AlignmentType.JUSTIFIED, run: { size: 24, font: "Times New Roman" } },
-                        ],
-                    },
-                });
+                try {
+                    const doc = new Document({
+                        sections: [{
+                            children: [
+                                new Paragraph({ text: `JUÍZADO ESPECIAL CÍVEL DA COMARCA DE ${selectedCase.comarca.toUpperCase()}`, style: "default" }),
+                                new Paragraph({ text: `Processo: ${selectedCase.caseNumber}`, style: "default" }),
+                                new Paragraph({ text: "\n" }),
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({ text: selectedCase.client.toUpperCase(), bold: true }),
+                                        new TextRun({ text: ", parte ré nestes autos, vem, por seu advogado, tendo em vista omissão na respeitável sentença, que, diante da desistência da ação pela parte autora, extinguiu o processo sem resolução do mérito, opor contra ela os presentes", }),
+                                    ],
+                                }),
+                                new Paragraph({ text: "\n" }),
+                                new Paragraph({ text: "EMBARGOS DE DECLARAÇÃO,", alignment: AlignmentType.CENTER, style: "strong" }),
+                                 new Paragraph({ text: "\n" }),
+                                new Paragraph({ text: "o que faz com fundamento nos artigos 1.022 e seguinte do Código de Processo Civil, e no Enunciado Cível número 90, do FONAJE.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "A embargante, assim como várias outras empresas de grande porte, enfrenta um grande volume de ações artificiais.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "Com o objetivo de aprimorar a gestão de demandas repetitivas e ações de massa, o Supremo Tribunal Federal (STF) e o CNJ criaram unidades para melhor acompanhamento e controle dessas demandas.", style: "justify", indentation: { firstLine: 720 } }),
+                                 new Paragraph({ text: `O que se tem visto, em boa quantidade, é a simples desistência da ação quando se verifica que o réu (${selectedCase.client}) bloqueou com eficiência as alegações autorais, e apresentou prova documental suficiente para aniquilar o direito pleiteado.`, style: "justify", indentation: { firstLine: 720 } }),
+                                 new Paragraph({ text: `Essas desistências, exercitadas depois de apresentada contestação, devidamente subsidiada por documentos que eliminam a pretensão autoral, é simples má-fé, já que a verdadeira intenção é, uma vez fracassada a estratégia inicial, a de se evitar uma sentença de improcedência, a coisa julgada e a inevitável sanção financeira pela deslealdade processual.`, style: "justify", indentation: { firstLine: 720 } }),
+                                 new Paragraph({
+                                    children: [
+                                        new TextRun({ text: "Aqui não está a embargante formulando uma resistência ao entendimento sedimentado de que, nos processos regidos pela Lei 9.099, a desistência da ação independe da anuência da parte acionada, embora, data maxima venia, entenda que pudesse fazê-lo, considerando as circunstâncias da desistência, embasada não apenas no artigo 485, § 4º, do Código de Processo Civil, mas também na nova redação do Enunciado Civil número 90 do FONAJE, que assim estabeleceu:", }),
+                                    ],
+                                    indentation: { firstLine: 720 },
+                                    style: "justify",
+                                }),
+                                 new Paragraph({
+                                    text: `"A desistência da ação, mesmo sem a anuência do réu já citado, implicará a extinção do processo sem resolução do mérito, ainda que tal ato se dê em audiência de instrução e julgamento, salvo quando houver indícios de litigância de má-fé ou lide temerária"`,
+                                    indentation: { left: 720, right: 720 },
+                                    style: "quote"
+                                }),
+                                 new Paragraph({ text: "Por tudo isso, o que se busca com esses embargos é a retificação da sentença, que, gerada pelo malicioso pedido de desistência, apenas extinguiu o feito sem considerar a contestação juntada aos autos, acompanhada de todos os documentos que demonstram que a parte autora alterou a verdade dos fatos para tentar alcançar ganho de forma ilegal.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: `Por esses fundamentos, com ênfase para nova redação do Enunciado Civil número 90 do FONAJE, requer-se recebimento dos presentes embargos, acolhendo-os para, sanando a omissão, conheça do mérito da causa e da má-fé da parte autora, retificando a sentença embargada para julgar improcedentes os pedidos iniciais, impondo à parte autora o pagamento de multa, conforme art. 81 do Código de Processo Civil, mais custas processuais e honorários advocatícios.`, style: "justify", indentation: { firstLine: 720 } }),
+                                 new Paragraph({ text: "\nNestes termos,", alignment: AlignmentType.CENTER }),
+                                 new Paragraph({ text: "Pede deferimento.", alignment: AlignmentType.CENTER }),
+                                 new Paragraph({ text: `\n${selectedCase.comarca}, ${new Date().toLocaleDateString('pt-BR')}.`, alignment: AlignmentType.CENTER }),
+                            ],
+                        }],
+                        styles: {
+                            paragraphStyles: [
+                                { id: "default", name: "Default", run: { size: 24, font: "Times New Roman" } },
+                                { id: "strong", name: "Strong", run: { size: 24, font: "Times New Roman", bold: true } },
+                                { id: "quote", name: "Quote", run: { size: 22, font: "Times New Roman", italics: true } },
+                                { id: "justify", name: "Justify", alignment: AlignmentType.JUSTIFIED, run: { size: 24, font: "Times New Roman" } },
+                            ],
+                        },
+                    });
 
-                docx.Packer.toBlob(doc).then(blob => {
-                    saveAs(blob, `Embargos_Declaracao_${selectedCase.caseNumber}.docx`);
-                });
+                    docx.Packer.toBlob(doc).then(blob => {
+                        saveAs(blob, `Embargos_Declaracao_${selectedCase.caseNumber}.docx`);
+                    });
+                } catch(e) {
+                    console.error("Erro ao gerar o documento .docx:", e);
+                    alert("Ocorreu um erro ao tentar gerar o documento. Verifique o console para mais detalhes.");
+                }
             };
 
             return (
@@ -1056,7 +1063,7 @@
             
             const generateRiskReport = () => {
                 const { jsPDF } = window.jspdf;
-                const doc = new jsPDF('p', 'pt', 'a4');
+                const doc = new jsPDF('l', 'pt', 'a4');
                 const title = "Relatório Consolidado de Riscos";
                 const tableBody = [];
                 casesData.forEach(c => {
@@ -1074,7 +1081,7 @@
                     theme: 'striped',
                     headStyles: { fillColor: '#1e3a8a', textColor: '#FFFFFF', font: 'helvetica', fontStyle: 'bold' },
                     styles: { font: 'helvetica', fontSize: 9 },
-                    columnStyles: { 4: { cellWidth: 150 }, 5: { cellWidth: 150 } }
+                    columnStyles: { 4: { cellWidth: 200 }, 5: { cellWidth: 200 } }
                 });
                 addHeaderAndFooter(doc, title);
                 doc.save('relatorio_consolidado_riscos.pdf');
@@ -1082,7 +1089,7 @@
 
             const generateRiskLevelReport = () => {
                  const { jsPDF } = window.jspdf;
-                 const doc = new jsPDF('p', 'pt', 'a4');
+                 const doc = new jsPDF('l', 'pt', 'a4');
                  const title = "Relatório de Casos por Nível de Risco";
                  const tableBody = casesData
                      .sort((a,b) => {
@@ -1116,7 +1123,7 @@
 
             const generateFraudIndicatorReport = () => {
                  const { jsPDF } = window.jspdf;
-                 const doc = new jsPDF('p', 'pt', 'a4');
+                 const doc = new jsPDF('l', 'pt', 'a4');
                  const title = "Relatório de Indicadores de Fraude";
                  const tableBody = [];
                  const indicatorMap = {};
@@ -1188,8 +1195,7 @@
                  </div>
             );
         };
-        const GenericModulePage = ({ moduleName }) => ( <div> <h2 className="text-3xl font-semibold text-gray-800 mb-6">{moduleName}</h2> <div className="bg-white p-8 rounded-lg shadow-md text-center"> <p className="text-gray-600">O conteúdo para o módulo <span className="font-semibold text-indigo-600">{moduleName}</span> será implementado aqui.</p> </div> </div> );
-
+        
         // --- COMPONENTE DE LAYOUT PRINCIPAL ---
         const MainLayout = ({ user, onLogout }) => {
             const [casesData, setCasesData] = React.useState(initialCasesData);
