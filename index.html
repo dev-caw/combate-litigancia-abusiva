@@ -1237,7 +1237,7 @@
                     case 'CentralDeRelatorios': return <CentralDeRelatoriosModule casesData={casesData} riskData={riskData} />;
                     default: 
                         const module = modules.find(m => m.id === activeModule);
-                        return <GenericModulePage moduleName={module?.name || "Módulo"} />;
+                        return <div className="text-center p-8">Módulo '{module?.name || 'Desconhecido'}' em construção.</div>;
                 }
             };
 
