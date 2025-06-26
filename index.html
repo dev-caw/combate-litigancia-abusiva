@@ -95,10 +95,10 @@
         const GEMINI_API_KEY = "AIzaSyBP3XKX1TakAgPcipquLgv3Qla4Ca6VhSQ";
         
         // --- INICIALIZAÇÃO DOS SERVIÇOS ---
-        const client = new google.generativeai.GenerativeModel({
-          model: "gemini-pro",
-          apiKey: GEMINI_API_KEY
-        });
+        const genAI = new google.ai.generativelanguage.v1beta.GenerativeAI({
+  apiKey: GEMINI_API_KEY,
+});
+const client = genAI.getGenerativeModel({ model: "gemini-pro" });
 
         let app;
         try {
