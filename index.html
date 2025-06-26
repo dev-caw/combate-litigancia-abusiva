@@ -1056,7 +1056,6 @@
     const [isGenerating, setIsGenerating] = React.useState(false);
     const [error, setError] = React.useState('');
 
-    // Modelo estático de petição (antes extraído de PDF)
     const modeloPeticao = `
 EXCELENTÍSSIMO SENHOR DOUTOR JUIZ DE DIREITO DO [NOME_DO_JUIZO] DA COMARCA DE [COMARCA] - [UF].
 
@@ -1113,7 +1112,7 @@ Responda APENAS com o texto final da petição adaptada, sem introduções, obse
             const payload = {
                 contents: [{ role: "user", parts: [{ text: prompt }] }]
             };
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1125,21 +1124,28 @@ Responda APENAS com o texto final da petição adaptada, sem introduções, obse
             }
 
             const result = await response.json();
-            const aiResponseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+            const aiResponseText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
 
             if (!aiResponseText) {
-                throw new Error("A resposta da IA estava vazia ou em formato incorreto.");
+                throw new Error("A resposta da IA estava vazia ou mal formatada.");
             }
 
-            // Geração do .docx
-            const { Paragraph, Document, Packer, AlignmentType } = window.docx;
+            // Verificação e carregamento da biblioteca docx
+            const docxLib = window.docx;
+            if (!docxLib || !docxLib.Paragraph) {
+                throw new Error("Biblioteca de geração de documentos não carregada corretamente.");
+            }
 
-            const paragraphs = aiResponseText.split('\n').map(text =>
+            const { Paragraph, Document, Packer, AlignmentType } = docxLib;
+
+            const paragraphs = aiResponseText.split('\n').map(line =>
                 new Paragraph({
-                    text: text.trim(),
-                    alignment: text.startsWith("Processo nº") || text.startsWith("[CLIENTE]") ? AlignmentType.LEFT : AlignmentType.JUSTIFIED,
+                    text: line.trim(),
+                    alignment: line.trim().startsWith("Processo nº") || line.trim().startsWith("[CLIENTE]")
+                        ? AlignmentType.LEFT
+                        : AlignmentType.JUSTIFIED,
                     spacing: { after: 120 },
-                    indent: { firstLine: text.trim() ? 720 : 0 }
+                    indent: { firstLine: line.trim() ? 720 : 0 }
                 })
             );
 
@@ -1152,12 +1158,12 @@ Responda APENAS com o texto final da petição adaptada, sem introduções, obse
                             name: "Default",
                             run: { size: 24, font: "Times New Roman" },
                             paragraph: { alignment: AlignmentType.JUSTIFIED, spacing: { after: 120 } }
-                        },
-                    ],
-                },
+                        }
+                    ]
+                }
             });
 
-            Packer.toBlob(doc).then(blob => {
+            await Packer.toBlob(doc).then(blob => {
                 saveAs(blob, `Embargos_AI_${selectedCase.caseNumber}.docx`);
             });
 
@@ -1171,7 +1177,7 @@ Responda APENAS com o texto final da petição adaptada, sem introduções, obse
 
     return (
         <div>
-            <h2 className="text-3xl font-semibold text-gray-800 mb-2">Anti-Desistência com IA</h2>
+            <h2 className="text-3xl font-semibold text-gray-800 mb-2">Anti-Desistência</h2>
             <p className="text-gray-600 mb-6">Selecione um caso para que a IA gere uma petição de embargos de declaração, com base no modelo padrão.</p>
             <CaseSelector cases={casesData} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} />
             <div className="bg-white p-6 rounded-lg shadow-md">
@@ -1181,13 +1187,14 @@ Responda APENAS com o texto final da petição adaptada, sem introduções, obse
                     className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300"
                 >
                     <SparkleIcon />
-                    {isGenerating ? 'Gerando com IA...' : 'Gerar Embargos com IA (.DOCX)'}
+                    {isGenerating ? 'Gerando com IA...' : 'Gerar Embargos (.DOCX)'}
                 </button>
                 {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
             </div>
         </div>
     );
 };
+
         const GestaoDeRiscosModule = ({ casesData, riskData }) => {
             const [expandedCaseId, setExpandedCaseId] = React.useState(null);
 
