@@ -1109,7 +1109,8 @@
                 setError('');
 
                 // Etapa c): Enviar o texto para a API do Gemini.
-                const prompt = \`
+                // CORREÇÃO APLICADA AQUI: Removida a barra invertida extra antes da crase.
+                const prompt = `
                     Aja como um advogado especialista. Adapte o seguinte modelo de petição de embargos de declaração com base nos dados do caso fornecido.
                     O objetivo é se opor à extinção do processo por desistência, argumentando a má-fé da parte autora e pedindo a análise do mérito com base na contestação já apresentada.
                     Substitua os marcadores (ex: [NOME_DO_JUIZO], [NUMERO_DO_PROCESSO], etc.) pelos dados reais do caso.
@@ -1130,15 +1131,15 @@
                     - **Data Atual:** \${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
 
                     Responda APENAS com o texto final da petição adaptada, sem introduções, observações ou cabeçalhos adicionais.
-                \`;
+                `;
 
                 try {
                     const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-                    const apiUrl = \`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=\${GEMINI_API_KEY}\`;
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=\${GEMINI_API_KEY}`;
                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
 
                     if (!response.ok) {
-                        throw new Error(\`Erro na API do Gemini: \${response.status}\`);
+                        throw new Error(`Erro na API do Gemini: \${response.status}`);
                     }
 
                     const result = await response.json();
@@ -1151,7 +1152,6 @@
                     // Etapa d): Construir o documento .docx com a resposta da IA.
                     const { Paragraph, Document, Packer, AlignmentType } = docx;
 
-                    // Divide a resposta da IA em parágrafos para formatação individual.
                     const paragraphs = aiResponseText.split('\\n').map(text =>
                         new Paragraph({
                             text: text,
@@ -1179,17 +1179,17 @@
 
                     // Etapa e): Promover o download automático do documento.
                     Packer.toBlob(doc).then(blob => {
-                        saveAs(blob, \`Embargos_AI_\${selectedCase.caseNumber}.docx\`);
+                        saveAs(blob, `Embargos_AI_\${selectedCase.caseNumber}.docx`);
                     });
 
                 } catch (e) {
                     console.error("Erro ao gerar documento com IA:", e);
-                    setError(\`Ocorreu um erro: \${e.message}\`);
+                    setError(`Ocorreu um erro: \${e.message}`);
                 } finally {
                     setIsGenerating(false);
                 }
             };
-
+            
             return (
                 <div>
                     <h2 className="text-3xl font-semibold text-gray-800 mb-2">Anti-Desistência com IA</h2>
