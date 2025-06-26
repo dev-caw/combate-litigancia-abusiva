@@ -576,11 +576,9 @@
                 let text = ''; 
                 const prompt = `Aja como um advogado sênior e estrategista. Analise o seguinte relato de um caso jurídico. Forneça uma resposta estruturada usando a formatação "### Título" para os cabeçalhos e "- " para listas. A resposta deve conter EXATAMENTE os seguintes cabeçalhos:\n### Resumo do Caso\n### Pontos de Atenção e Riscos\n### Sugestão de Estratégia\n\nTexto do caso para análise:\n---\n${caseText}\n---`; 
                 try { 
-                    const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] }; 
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`; 
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); 
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); 
-                    const result = await response.json(); 
+                    const result = await client.generateContent(prompt);
+const text = result?.response?.parts?.[0]?.text || '';
+
                     text = result.candidates?.[0]?.content?.parts?.[0]?.text || ''; 
                     if (text) { 
                         setAnalysisResult(text); 
