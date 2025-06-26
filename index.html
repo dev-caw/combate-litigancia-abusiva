@@ -824,11 +824,14 @@ const text = result?.response?.parts?.[0]?.text || '';
                     const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
                     
-                    const response = await fetch(apiUrl, { 
-                        method: 'POST', 
-                        headers: { 'Content-Type': 'application/json' }, 
-                        body: JSON.stringify(payload) 
-                    });
+                    try {
+  const result = await client.generateContent(prompt);
+  text = result.response?.parts?.[0]?.text || '';
+  // resto do seu código para tratar o texto gerado
+} catch (error) {
+  console.error("Erro ao chamar o Gemini SDK:", error);
+  setAnalysisResult("Ocorreu um erro ao gerar a análise. Tente novamente.");
+}
                     
                     if (!response.ok) {
                         throw new Error(`Erro na API do Gemini: ${response.statusText}`);
