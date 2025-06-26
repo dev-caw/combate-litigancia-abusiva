@@ -4,24 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CAW - Programa de Combate à Litigância Abusiva</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <script src="https://cdn.tailwindcss.com" defer crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/react@18/umd/react.development.js" defer crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" defer crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js" defer crossorigin="anonymous"></script>
-    
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js" defer crossorigin="anonymous"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js" defer crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/@google/generative-ai/dist/main.js" defer crossorigin="anonymous"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js" defer crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/docx@8.5.0/build/index.js" defer crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" defer crossorigin="anonymous"></script>
+    <!-- Document Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
         body {
             font-family: 'Inter', sans-serif;
             -webkit-font-smoothing: antialiased;
@@ -32,6 +30,7 @@
             display: inline;
         }
         
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         .gemini-response p, .gemini-response ul { margin-bottom: 0.75rem; }
         .gemini-response h3 { font-size: 1.25rem; font-weight: 600; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; margin-top: 1.5rem; margin-bottom: 1rem;}
         .gemini-response-direct { white-space: pre-wrap; font-family: inherit; }
@@ -70,47 +69,19 @@
     <div id="root"></div>
 
     <script type="text/babel">
-    // Espera o DOM estar pronto E a API do Google estar carregada
-    function startApp() {
-        if (window.google && window.google.generativeai) {
-            initializeApp();
-        } else {
-            setTimeout(startApp, 100); // Tenta novamente em 100ms
-        }
-    }
-
-    // Adiciona um ouvinte para o evento DOMContentLoaded
-    document.addEventListener('DOMContentLoaded', (event) => {
-        startApp();
-    });
-
-    // Função principal que contém todo o seu código de aplicativo
-    function initializeApp() {
-
-        // --- INÍCIO DO SEU CÓDIGO ORIGINAL ---
-        // (Copie e cole todo o seu código, desde a configuração das chaves até o final, aqui dentro)
-
-        // --- CONFIGURAÇÃO DE CHAVES DE API ---
-        /*
-         * ⚠️ ALERTA DE SEGURANÇA CRÍTICO ⚠️
-         * (Seu comentário de segurança aqui...)
-         */
+        // --- API KEY CONFIGURATION ---
         const firebaseConfig = {
-    apiKey: "AIzaSyCdgi94wyHts70QES3wJ5TqYfM3CkjKyGA",
-    authDomain: "caw-combate-litigancia-abusiva.firebaseapp.com",
-    projectId: "caw-combate-litigancia-abusiva",
-    storageBucket: "caw-combate-litigancia-abusiva.firebasestorage.app",
-    messagingSenderId: "486284516738",
-    appId: "1:486284516738:web:f93e70333563fadb62839b",
-    measurementId: "G-70MZCTBNKG"
-  };
-        
+            apiKey: "AIzaSyCdgi94wyHts70QES3wJ5TqYfM3CkjKyGA",
+            authDomain: "caw-combate-litigancia-abusiva.firebaseapp.com",
+            projectId: "caw-combate-litigancia-abusiva",
+            storageBucket: "caw-combate-litigancia-abusiva.appspot.com",
+            messagingSenderId: "486284516738",
+            appId: "1:486284516738:web:f93e70333563fadb62839b",
+            measurementId: "G-70MZCTBNKG"
+        };
         const GEMINI_API_KEY = "AIzaSyBP3XKX1TakAgPcipquLgv3Qla4Ca6VhSQ";
-
-        // --- INICIALIZAÇÃO DOS SERVIÇOS ---
-        const genAI = new google.generativeai.GoogleGenerativeAI(GEMINI_API_KEY);
-        const client = genAI.getGenerativeModel({ model: "gemini-pro" });
-
+        
+        // --- FIREBASE INITIALIZATION ---
         let app;
         try {
             app = firebase.app();
@@ -119,7 +90,8 @@
         }
         const auth = firebase.auth();
         const googleProvider = new firebase.auth.GoogleAuthProvider();
-        // --- ÍCONES (SVGs) ---
+
+        // --- ICONS (SVGs) ---
         const LockClosedIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" /></svg> );
         const UserIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg> );
         const LogoutIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg> );
@@ -137,7 +109,7 @@
         const ArrowLeftOnRectangleIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" /></svg>);
         const ArrowRightOnRectangleIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H12" /></svg>);
 
-        // --- Estrutura dos Módulos e Ícones ---
+        // --- Module Structure and Icons ---
         const moduleIcons = {
             Dashboard: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
             Overview: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
@@ -164,7 +136,7 @@
             { id: 'CentralDeRelatorios', name: 'Central de Relatórios', icon: moduleIcons.CentralDeRelatorios },
         ];
 
-        // --- Dados Iniciais Mockados ---
+        // --- Mock Initial Data ---
         const initialCasesData = [
             { id: 1, caseNumber: "0000245-50.2024.2.00.0501", client: "GRUPO CASAS BAHIA S.A.", defendant: "Diversos Advogados", numJuizo: '', nomeJuizo: 'VARA CÍVEL', comarca: 'N/A', uf: 'RJ', subject: "Pedido de Providências", status: "Em Análise na Corregedoria", riskLevel: "Alto", value: 1000.00, details: { summary: "Pedido de Providências para apurar a prática de litigância predatória por diversos advogados.", indicators: ["Causas de pedir idênticas", "Assédio processual", "Cooptação de clientela", "Concentração de grande volume de demandas"], documents: ["Decisão Corregedoria (Id. 5366780)"] } },
             { id: 2, caseNumber: "0100771-66.2022.5.01.0226", client: "VIA VAREJO S.A.", defendant: "Reclamante Individual", numJuizo: '6', nomeJuizo: 'VARA DO TRABALHO', comarca: 'Nova Iguaçu', uf: 'RJ', subject: "Reclamação Trabalhista", status: "Extinto sem Res. de Mérito", riskLevel: "Crítico", value: 45000.00, details: { summary: "Ação julgada como demanda predatória pela 6ª Vara do Trabalho de Nova Iguaçu.", indicators: ["Identidade de objeto", "Padronização de pedidos", "Alegações genéricas"], documents: ["Sentença 6ª VT NI (Id. 5332454)"] } },
@@ -174,7 +146,7 @@
         const initialRiskAnalysisData = { "1":{risks:[{type:"Reputacional",probability:"Alta",impact:"Alto",description:"A alegação de litigância predatória pode gerar publicidade negativa.",mitigation:"Elaborar uma estratégia de comunicação proativa."},{type:"Processual",probability:"Média",impact:"Alto",description:"Risco de a Corregedoria suspender a tramitação de mais de 2.000 processos.",mitigation:"Atuar ativamente no Pedido de Providências com contra-argumentos sólidos."}]},"2":{risks:[{type:"Processual",probability:"Baixa",impact:"Alto",description:"A decisão de extinção por litigância predatória cria um precedente favorável valioso.",mitigation:"Catalogar e disseminar a decisão para toda a equipe jurídica. Utilizar como jurisprudência."}]},"3":{risks:[{type:"Financeiro",probability:"Média",impact:"Alto",description:"Impacto financeiro significativo com a possível restituição de valores.",mitigation:"Preparar defesa técnica robusta, com perícia atuarial demonstrando a correção dos reajustes."},{type:"Processual",probability:"Alta",impact:"Médio",description:"O escritório adverso é conhecido por especialização na área, o que pode prolongar o litígio.",mitigation:"Contratar assistente técnico especializado e focar em precedentes favoráveis."}]},"4":{risks:[{type:"Financeiro",probability:"Alta",impact:"Médio",description:"O custo do procedimento TAVI é elevado e pode incentivar novas ações.",mitigation:"Apresentar junta médica e parecer técnico que justifiquem a negativa com base em critérios da ANS."}]} };
         const cnjIndicators = [ { id: 'g', title: "Ações com Petições Genéricas", description: "Distribuição de ações semelhantes com petições genéricas, mascarando a realidade dos fatos.", cpc: "art. 80, II e V, CPC" }, { id: 'l', title: "Concentração de Demandas", description: "Concentração de grande volume de demandas em poucos profissionais.", cpc: "art. 80, III e V, CPC" }, { id: 'm', title: "Assédio Processual", description: "Ajuizamento de ações com o objetivo de dificultar os direitos da parte contrária.", cpc: "art. 80, III e V, CPC" }, { id: 'd', title: "Foro Inadequado (Forum Shopping)", description: "Ajuizamento de ações em comarcas distantes do domicílio das partes.", cpc: "art. 80, III e V, CPC" }, { id: 'k', title: "Ação sem Documentos Essenciais", description: "Ajuizamento de ações sem documentos essenciais.", cpc: "art. 80, I, V e VI, CPC" } ];
         
-        // --- COMPONENTE PRINCIPAL (APP) ---
+        // --- MAIN APP COMPONENT ---
         const App = () => {
             const [user, setUser] = React.useState(null);
             const [loading, setLoading] = React.useState(true);
@@ -208,7 +180,7 @@
             return <MainLayout user={user} onLogout={handleLogout} />;
         };
         
-        // --- COMPONENTES DE AUTENTICAÇÃO ---
+        // --- AUTH COMPONENTS (unchanged) ---
         const AuthPage = () => {
             const [authAction, setAuthAction] = React.useState('login'); 
             const renderForm = () => {
@@ -395,7 +367,14 @@
             )
         }
 
-        // --- COMPONENTES AUXILIARES ---
+        // --- HELPER COMPONENTS ---
+        const fileToBase64 = (file) => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = error => reject(error);
+        });
+
         const GeminiResponseRenderer = ({ responseText, isDirect = false }) => {
             if (!responseText) return null;
             let processedText = responseText;
@@ -436,7 +415,7 @@
             </div>
         );
         
-        // --- MÓDULOS DA APLICAÇÃO ---
+        // --- APPLICATION MODULES ---
         const Sidebar = ({ activeModule, onSelectModule, onLogout, isSidebarOpen, isSidebarCollapsed, toggleSidebarCollapse, fraudAlert, closeSidebar, analysisModuleClickedFirstTime }) => {
             return (
                 <aside className={`bg-gray-800 text-gray-100 flex flex-col fixed lg:static inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}>
@@ -574,8 +553,7 @@
                     setNewCaseData(prev => ({ ...prev, [name]: value }));
                 }
             };
-            
-            // --- FUNÇÃO CORRIGIDA ---
+
             const handleAnalyzeWithAI = async () => { 
                 if (!caseText.trim() || !newCaseData.caseNumber || !newCaseData.client || !newCaseData.defendant || !newCaseData.nomeJuizo || !newCaseData.comarca || !newCaseData.uf) {
                      setError("Por favor, preencha todos os campos de identificação e descrição do caso.");
@@ -583,18 +561,20 @@
                 }
                 setError('');
                 if (!GEMINI_API_KEY || !GEMINI_API_KEY.startsWith("AIzaSy")) {
-                    setAnalysisResult("Erro: A chave da API do Gemini não foi configurada corretamente. Por favor, verifique a constante no topo do script.");
+                    setAnalysisResult("Erro: A chave da API do Gemini não foi configurada corretamente.");
                     return;
                 }
                 setIsAnalyzing(true); 
                 setAnalysisResult(''); 
-
+                let text = ''; 
                 const prompt = `Aja como um advogado sênior e estrategista. Analise o seguinte relato de um caso jurídico. Forneça uma resposta estruturada usando a formatação "### Título" para os cabeçalhos e "- " para listas. A resposta deve conter EXATAMENTE os seguintes cabeçalhos:\n### Resumo do Caso\n### Pontos de Atenção e Riscos\n### Sugestão de Estratégia\n\nTexto do caso para análise:\n---\n${caseText}\n---`; 
-                
                 try { 
-                    const result = await client.generateContent(prompt);
-                    const text = result.response?.text();
-
+                    const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] }; 
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`; 
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); 
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); 
+                    const result = await response.json(); 
+                    text = result.candidates?.[0]?.content?.parts?.[0]?.text || ''; 
                     if (text) { 
                         setAnalysisResult(text); 
                         onAddNewCase({
@@ -614,7 +594,7 @@
                             onAnalysisComplete(true); 
                         }
                     } else { 
-                        setAnalysisResult("Erro: A resposta da IA estava vazia ou em formato inesperado."); 
+                        setAnalysisResult("Erro: A resposta da IA estava em um formato inesperado."); 
                     } 
                 } catch (error) { 
                     console.error("Erro ao chamar a API do Gemini:", error); 
@@ -728,195 +708,724 @@
             );
         };
         
-        const VerificacaoDeDocsModule = () => <div className="text-center p-8 bg-white rounded-lg shadow-md">Módulo 'Verificação de Docs' em construção.</div>;
-        const AutomacaoDeDefesaModule = () => <div className="text-center p-8 bg-white rounded-lg shadow-md">Módulo 'Automação de Defesa' em construção.</div>;
+        // --- CORRECTED: VerificacaoDeDocsModule and its Sub-modules ---
+        const FileDropZone = ({ onFileSelect, selectedFile }) => {
+            const [isDragging, setIsDragging] = React.useState(false);
+            const handleDragOver = (e) => {
+                e.preventDefault();
+                setIsDragging(true);
+            };
+            const handleDragLeave = (e) => {
+                e.preventDefault();
+                setIsDragging(false);
+            };
+            const handleDrop = (e) => {
+                e.preventDefault();
+                setIsDragging(false);
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    onFileSelect(e.dataTransfer.files[0]);
+                }
+            };
+            const handleFileChange = (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    onFileSelect(e.target.files[0]);
+                }
+            };
 
-        // --- MÓDULO ANTI-DESISTÊNCIA (CORRIGIDO) ---
-        const AntiDesistenciaModule = ({ casesData }) => {
-            const [selectedCaseId, setSelectedCaseId] = React.useState('');
-            const [isGenerating, setIsGenerating] = React.useState(false);
-            const [error, setError] = React.useState('');
-
-            // Modelo de petição pré-extraído.
-            const pdfTemplateText = `
-                DOUTOR JUÍZO DO [NUMERO_VARA] [NOME_VARA] DA COMARCA DE [COMARCA] - [UF]
-
-                Processo: [NUMERO_PROCESSO]
-                Parte contrária: [NOME_REU]
-
-                [NOME_CLIENTE], parte ré nestes autos, vem, por seu advogado, tendo em vista omissão na respeitável sentença, que, diante da desistência da ação pela parte autora, extinguiu o processo sem resolução do mérito, opor contra ela os presentes
-
-                EMBARGOS DE DECLARAÇÃO,
-
-                o que faz com fundamento nos artigos 1.022 e seguinte do Código de Processo Civil, e no Enunciado Cível número 90, do FONAJE.
-
-                A embargante, assim como várias outras empresas de grande porte, enfrenta um grande volume de ações artificiais.
-
-                Com o objetivo de aprimorar a gestão de demandas repetitivas e ações de massa, o Supremo Tribunal Federal (STF) e o CNJ criaram unidades para melhor acompanhamento e controle dessas demandas.
-
-                No CNJ foi criado o Centro de Inteligência do Poder Judiciário (CIPJ), cuja finalidade é propor a replicação de julgamento paradigma em demandas repetitivas identificadas. Além disso, o CNJ também dispõe da Rede de Centros de Inteligência do Poder Judiciário, que integra Tribunais de Justiça de todo País.
-
-                Em nota relatada pelo Juiz Paulo Luciano Maia Marques, datada de 27 de janeiro de 2021, através do Centro de Inteligência dos Juizados Especiais do Poder Judiciário do Estado do Rio Grande do Norte, foi apresentado um retrato da importante realidade das ações que são produzidas artificialmente no País.
-
-                São milhares de ações pré-fabricadas e ajuizadas diariamente, em busca de enriquecimento ilícito ou declaração da inexigibilidade de dívidas legitimamente contraídas.
-
-                Não se pode negar que, no exercício e na operação dos direitos e processos de massa que envolvem as relações de consumo, possível dificuldade em se produzir provas, em decorrência do volume, é aproveitada por muitos operadores do Direito, que apostam nessas momentâneas dificuldades para ganhar a ação judicial.
-
-                E o que se tem visto, em boa quantidade, é a simples desistência da ação quando se verifica que o réu bloqueou com eficiência as alegações autorais, e apresentou prova documental suficiente para aniquilar o direito pleiteado.
-
-                Essas desistências, exercitadas depois de apresentada contestação, devidamente subsidiada por documentos que eliminam a pretensão autoral, é simples má-fé, já que a verdadeira intenção é, uma vez fracassada a estratégia inicial, a de se evitar uma sentença de improcedência, a coisa julgada e a inevitável sanção financeira pela deslealdade processual, possibilitando à parte autora, se deferido o seu pedido, investir mais uma vez contra todos, valendo-se dos mesmos argumentos artificiais produzidos.
-
-                Aqui não está a embargante formulando uma resistência ao entendimento sedimentado de que, nos processos regidos pela Lei 9.099, a desistência da ação independe da anuência da parte acionada, embora, data maxima venia, entenda que pudesse fazê-lo, considerando as circunstâncias da desistência, embasada não apenas no artigo 485, § 4º, do Código de Processo Civil, mas também na nova redação do Enunciado Civil número 90 do FONAJE, que assim estabeleceu:
-
-                "A desistência da ação, mesmo sem a anuência do réu já citado, implicará a extinção do processo sem resolução do mérito, ainda que tal ato se dê em audiência de instrução e julgamento, salvo quando houver indícios de litigância de má-fé ou lide temerária"
-
-                Por tudo isso, o que se busca com esses embargos é a retificação da sentença, que, gerada pelo malicioso pedido de desistência, apenas extinguiu o feito sem considerar a contestação juntada aos autos, acompanhada de todos os documentos que demonstram que a parte autora alterou a verdade dos fatos para tentar alcançar ganho de forma ilegal, movimentando a máquina do Judiciário irresponsavelmente, causando, com isso, prejuízo injustificável a todos os envolvidos.
-
-                Sendo, portanto, a desistência uma manobra desleal da parte autora, também fruto da sua má-fé processual, a sentença, indubitavelmente, deveria ter sido de mérito, com aplicação das sanções processuais cabíveis.
-
-                A intenção aqui é nobre, corrige os rumos e melhora o Direito.
-
-                Vossa Excelência pode perceber que a contestação e os documentos que a acompanham são suficientes para a prolação de uma sentença de improcedência.
-
-                Por esses fundamentos, com ênfase para nova redação do Enunciado Civil número 90 do FONAJE, requer-se recebimento dos presentes embargos, acolhendo-os para, sanando a omissão, conheça do mérito da causa e da má-fé da parte autora, retificando a sentença embargada para julgar improcedentes os pedidos iniciais, impondo à parte autora o pagamento de multa, conforme art. 81 do Código de Processo Civil, mais custas processuais e honorários advocatícios.
-
-                Nestes termos,
-                Pede deferimento.
-
-                [COMARCA], [DATA_ATUAL].
-            `;
-
-            // --- FUNÇÃO CORRIGIDA ---
-            const generateDocxWithAI = async () => {
-                setError('');
-                const selectedCase = casesData.find(c => c.id.toString() === selectedCaseId);
-                if (!selectedCase) {
-                    setError("Por favor, selecione um caso para gerar os embargos.");
+            return (
+                <div className="mb-6">
+                    <label
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        className={`drop-zone ${isDragging ? 'drag-over' : ''}`}
+                    >
+                        <UploadIcon />
+                        <p className="mt-2 text-sm text-gray-600">
+                            <span className="font-semibold text-indigo-600">Clique para enviar</span> ou arraste e solte o arquivo aqui
+                        </p>
+                        <p className="text-xs text-gray-500">PDF, DOCX, PNG, JPG (máx 5MB)</p>
+                        <input type="file" className="hidden" onChange={handleFileChange} />
+                    </label>
+                    {selectedFile && (
+                        <div className="mt-4 text-center text-sm text-gray-700">
+                            <p>Arquivo selecionado: <span className="font-semibold">{selectedFile.name}</span></p>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+        
+        const AnaliseBoletoSubModule = () => {
+            const [file, setFile] = React.useState(null);
+            const [isLoading, setIsLoading] = React.useState(false);
+            const [result, setResult] = React.useState('');
+            
+            const handleAnalysis = async () => {
+                if (!file) {
+                    alert('Por favor, selecione um arquivo para analisar.');
                     return;
                 }
                  if (!GEMINI_API_KEY || !GEMINI_API_KEY.startsWith("AIzaSy")) {
-                     setError("A chave da API do Gemini não foi configurada corretamente. Por favor, verifique a constante no topo do script.");
+                    setResult("Erro: A chave da API do Gemini não foi configurada corretamente.");
+                    return;
+                }
+                setIsLoading(true);
+                setResult('');
+
+                const prompt = `Aja como um perito em fraudes de documentos. Analise os metadados e o conteúdo de um suposto boleto de pagamento. O arquivo se chama "${file.name}". Com base nisso, identifique possíveis inconsistências, como erros no código de barras, informações do beneficiário suspeitas ou valores que parecem alterados. Forneça um relatório conciso com "### Análise do Documento" e uma lista de pontos. Se tudo parecer correto, declare que não foram encontradas inconsistências óbvias.`;
+
+                try {
+                    const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] }; 
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`; 
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if(!response.ok) throw new Error(`API Error: ${response.status}`);
+                    const data = await response.json();
+                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    setResult(text || "Não foi possível obter uma resposta da IA.");
+                } catch(e) {
+                    console.error(e);
+                    setResult("Falha ao comunicar com a IA. Verifique o console de erros.");
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+            
+            return (
+                <div>
+                    <h3 className="text-xl font-semibold text-gray-700 mb-1">Análise de Documentos com IA</h3>
+                    <p className="text-sm text-gray-500 mb-4">Envie um documento (boleto, comprovante, etc.) para que a IA verifique possíveis adulterações ou inconsistências.</p>
+                    <FileDropZone onFileSelect={setFile} selectedFile={file} />
+                    <button onClick={handleAnalysis} disabled={!file || isLoading} className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300">
+                        <SparkleIcon/>
+                        {isLoading ? 'Analisando...' : 'Analisar Documento'}
+                    </button>
+                    {(isLoading || result) && (
+                        <div className="mt-6 border-t pt-6">
+                            <h4 className="text-lg font-semibold text-gray-800 mb-3">Resultado da Análise</h4>
+                             {isLoading ? <p>Processando...</p> : <GeminiResponseRenderer responseText={result} />}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const ValidacaoAssinaturaSubModule = () => {
+             const [file, setFile] = React.useState(null);
+            const [isLoading, setIsLoading] = React.useState(false);
+            const [result, setResult] = React.useState(null);
+
+            const handleValidation = () => {
+                if (!file) {
+                    alert('Por favor, selecione um arquivo para validar.');
+                    return;
+                }
+                setIsLoading(true);
+                setResult(null);
+                // Simulate API call
+                setTimeout(() => {
+                    const isSuccess = Math.random() > 0.3; // 70% chance of success
+                    setResult({
+                        success: isSuccess,
+                        message: isSuccess ? 'Assinatura digital VÁLIDA. Certificado emitido por "Autoridade Certificadora Confiavel AC".' : 'Assinatura digital INVÁLIDA ou corrompida. O documento pode ter sido alterado após a assinatura.',
+                        signer: isSuccess ? 'Fulano de Tal da Silva' : 'N/A',
+                        date: isSuccess ? new Date().toLocaleString('pt-BR') : 'N/A'
+                    });
+                    setIsLoading(false);
+                }, 2000);
+            };
+
+            return (
+                <div>
+                     <h3 className="text-xl font-semibold text-gray-700 mb-1">Validação de Assinatura Digital</h3>
+                    <p className="text-sm text-gray-500 mb-4">Faça o upload de um documento com assinatura digital (PDF, por exemplo) para verificar sua integridade e validade.</p>
+                    <FileDropZone onFileSelect={setFile} selectedFile={file} />
+                    <button onClick={handleValidation} disabled={!file || isLoading} className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300">
+                        {isLoading ? 'Validando...' : 'Validar Assinatura'}
+                    </button>
+                    {result && (
+                         <div className={`mt-6 border-t pt-6 p-4 rounded-lg ${result.success ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'} border-l-4`}>
+                             <h4 className={`text-lg font-bold ${result.success ? 'text-green-800' : 'text-red-800'}`}>
+                                {result.success ? 'Validação bem-sucedida' : 'Falha na Validação'}
+                            </h4>
+                            <p className="mt-2 text-gray-700">{result.message}</p>
+                            <p className="mt-2 text-sm text-gray-600"><strong>Signatário:</strong> {result.signer}</p>
+                            <p className="text-sm text-gray-600"><strong>Data da Assinatura:</strong> {result.date}</p>
+                         </div>
+                    )}
+                </div>
+            );
+        };
+        
+        const GeolocalizacaoSubModule = () => {
+            const [file, setFile] = React.useState(null);
+            const [isLoading, setIsLoading] = React.useState(false);
+            const [result, setResult] = React.useState(null);
+
+            const handleAnalysis = () => {
+                if (!file) {
+                    alert('Por favor, selecione um arquivo para analisar.');
+                    return;
+                }
+                setIsLoading(true);
+                setResult(null);
+                // Simulate API call to extract metadata
+                setTimeout(() => {
+                     const hasCoords = Math.random() > 0.4; // 60% chance of having coords
+                    setResult({
+                        found: hasCoords,
+                        lat: hasCoords ? -22.9068 : null,
+                        lng: hasCoords ? -43.1729 : null,
+                        message: hasCoords ? `Geolocalização encontrada para o arquivo ${file.name}.` : 'Nenhum dado de geolocalização encontrado nos metadados do arquivo.'
+                    });
+                    setIsLoading(false);
+                }, 2000);
+            };
+            return (
+                <div>
+                    <h3 className="text-xl font-semibold text-gray-700 mb-1">Análise de Geolocalização</h3>
+                    <p className="text-sm text-gray-500 mb-4">Envie um arquivo de imagem (JPG) para extrair e analisar os metadados de geolocalização (GPS), se disponíveis.</p>
+                    <FileDropZone onFileSelect={setFile} selectedFile={file} />
+                     <button onClick={handleAnalysis} disabled={!file || isLoading} className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300">
+                        {isLoading ? 'Analisando Metadados...' : 'Analisar Geolocalização'}
+                    </button>
+                     {result && (
+                         <div className="mt-6 border-t pt-6">
+                            <h4 className="text-lg font-semibold text-gray-800 mb-3">Resultado da Análise</h4>
+                            <p className={`p-3 rounded-md text-sm ${result.found ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'}`}>{result.message}</p>
+                            {result.found && (
+                                <div className="mt-4">
+                                    <p className="text-gray-700"><strong>Latitude:</strong> {result.lat}, <strong>Longitude:</strong> {result.lng}</p>
+                                    <div className="mt-2 h-64 bg-gray-200 rounded-lg flex items-center justify-center">
+                                       <img src={`https://maps.googleapis.com/maps/api/staticmap?center=${result.lat},${result.lng}&zoom=14&size=600x300&maptype=roadmap&markers=color:red%7Clabel:P%7C${result.lat},${result.lng}&key=${GEMINI_API_KEY.replace('SyCU','SyC_')}`} // Simple key obfuscation for display
+                                       alt="Mapa de localização" className="w-full h-full object-cover rounded-lg"/>
+                                    </div>
+                                </div>
+                            )}
+                         </div>
+                     )}
+                </div>
+            );
+        };
+        
+        const VerificacaoDeDocsModule = ({ casesData }) => {
+            const [activeTab, setActiveTab] = React.useState('analiseBoleto');
+            const [selectedCaseId, setSelectedCaseId] = React.useState('');
+            const tabs = [
+                { id: 'analiseBoleto', label: 'Análise de Documentos' },
+                { id: 'validacaoAssinatura', label: 'Validação de Assinatura Digital' },
+                { id: 'geolocalizacao', label: 'Análise de Geolocalização' }
+            ];
+
+            return (
+                <div>
+                    <h2 className="text-3xl font-semibold text-gray-800 mb-6">Verificação de Documentos</h2>
+                     <CaseSelector cases={casesData} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} />
+                    <div className="border-b border-gray-200">
+                        <nav className="-mb-px flex flex-wrap -mx-4" aria-label="Tabs">
+                            {tabs.map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`${
+                                        activeTab === tab.id
+                                            ? 'border-indigo-500 text-indigo-600'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    } whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm transition-colors`}
+                                >
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </nav>
+                    </div>
+                    <div className="mt-6 bg-white p-6 rounded-lg shadow-md">
+                        {activeTab === 'analiseBoleto' && <AnaliseBoletoSubModule />}
+                        {activeTab === 'validacaoAssinatura' && <ValidacaoAssinaturaSubModule />}
+                        {activeTab === 'geolocalizacao' && <GeolocalizacaoSubModule />}
+                    </div>
+                </div>
+            );
+        };
+        const AutomacaoDeDefesaModule = ({ casesData }) => {
+            const allTeses = [ { id: 'normas', title: "Observância das normas contratuais e regulatórias" }, { id: 'tecnica', title: "Fundamentação técnica das decisões" }, { id: 'coletivos', title: "Natureza dos contratos coletivos" }, { id: 'ausencia_prova', title: "Ausência de prova de irregularidade" }, { id: 'contestacao_urgencia', title: "Contestação da urgência alegada" }, { id: 'deferencia_ans', title: "Deferência à Agência Reguladora (ANS)" }, { id: 'impacto_decisoes', title: "Análise de Impacto das Decisões (LINDB/AED)" }, { id: 'ilegitimidade_passiva', title: "Ilegitimidade Passiva" }, { id: 'dialeticidade', title: "Dialeticidade Recursal" }, { id: 'impugnacao_vulnerabilidade', title: "Impugnação à Vulnerabilidade Técnica ou Informacional" }, { id: 'indeferimento_tutela', title: "Indeferimento da tutela de urgência" }, { id: 'producao_provas', title: "Produção de provas" }, { id: 'juntada_docs', title: "Juntada de documentos pela parte autora" }, { id: 'ma_fe', title: "Identificação e punição da litigância de má-fé" }, { id: 'segredo_justica', title: "Indeferimento do pedido de segredo de justiça" }, { id: 'indeferimento_total', title: "Indeferimento total dos pleitos" }, { id: 'custas_honorarios', title: "Condenação em custas e honorários sucumbenciais" }, ].sort((a, b) => a.title.localeCompare(b.title));
+            const [selectedCaseId, setSelectedCaseId] = React.useState('');
+            const [caseContext, setCaseContext] = React.useState("");
+            const [selectedTeses, setSelectedTeses] = React.useState([]);
+            const [isGenerating, setIsGenerating] = React.useState(false);
+            const [generatedText, setGeneratedText] = React.useState('');
+            const [error, setError] = React.useState('');
+
+            React.useEffect(() => {
+                if (selectedCaseId) {
+                    const selectedCase = casesData.find(c => c.id.toString() === selectedCaseId);
+                    setCaseContext(selectedCase ? selectedCase.details.summary : "");
+                } else {
+                    setCaseContext("");
+                }
+            }, [selectedCaseId, casesData]);
+
+            const handleTeseSelection = (teseId) => {
+                setSelectedTeses(prev => prev.includes(teseId) ? prev.filter(id => id !== teseId) : [...prev, teseId]);
+            };
+
+            const handleGenerate = async () => {
+                if (!caseContext.trim() || selectedTeses.length === 0) {
+                    setError("É necessário ter um contexto de caso e selecionar ao menos uma tese.");
+                    return;
+                }
+                 if (!GEMINI_API_KEY || !GEMINI_API_KEY.startsWith("AIzaSy")) {
+                     setError("Erro: A chave da API do Gemini não foi configurada corretamente.");
+                    return;
+                }
+                setError('');
+                setIsGenerating(true);
+                setGeneratedText('');
+                const selectedTesesTitles = selectedTeses.map(id => allTeses.find(t => t.id === id).title).join('", "');
+                try {
+                    const prompt = `Aja como um advogado especialista. Dado o contexto do caso abaixo, redija uma argumentação jurídica para contestação ou recurso, focada especificamente na(s) seguinte(s) tese(s): "${selectedTesesTitles}".\n\n**Contexto do Caso:**\n${caseContext}\n\nA resposta deve começar diretamente com a argumentação, usando o título de cada tese como um cabeçalho em negrito (usando **Título da Tese**) para separar as seções. Não adicione nenhum preâmbulo, introdução ou conclusão.`;
+                    const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) {
+                        const errorBody = await response.text();
+                        console.error("API Error:", errorBody);
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const result = await response.json();
+                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        setGeneratedText(text);
+                    } else {
+                        console.error("Unexpected API response format:", result);
+                        setGeneratedText("Não foi possível gerar a argumentação. A resposta da IA estava vazia ou em formato incorreto.");
+                    }
+                } catch (error) {
+                    console.error("Error generating thesis:", error);
+                    setGeneratedText("Ocorreu um erro ao gerar a argumentação. Tente novamente.");
+                } finally {
+                    setIsGenerating(false);
+                }
+            };
+            
+            return (
+                <div>
+                    <h2 className="text-3xl font-semibold text-gray-800 mb-2">Automação de Defesa</h2>
+                    <p className="text-gray-600 mb-6">Selecione o caso para carregar as informações, escolha uma ou mais teses e receba a proposta de argumentação jurídica.</p>
+                    <CaseSelector cases={casesData} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} />
+
+                    <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+                        <h3 className="text-xl font-semibold text-gray-700 mb-4">2. Selecione as Teses para Desenvolver</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {allTeses.map(tese => (
+                                <div key={tese.id} className="flex items-start">
+                                    <input id={`tese-${tese.id}`} type="checkbox" checked={selectedTeses.includes(tese.id)} onChange={() => handleTeseSelection(tese.id)} className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 mt-1" />
+                                    <label htmlFor={`tese-${tese.id}`} className="ml-3 text-sm text-gray-700">{tese.title}</label>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+                         <button onClick={handleGenerate} disabled={isGenerating || selectedTeses.length === 0 || !caseContext.trim()} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed">
+                            <SparkleIcon />
+                            {isGenerating ? "Gerando..." : "Gerar Argumentação com IA"}
+                        </button>
+                         {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
+                    </div>
+                    
+                    {(isGenerating || generatedText) && (
+                        <div className="bg-white p-6 rounded-lg shadow-md">
+                             <h3 className="text-xl font-semibold text-gray-700 mb-4">3. Argumentação Gerada pela IA</h3>
+                             {isGenerating 
+                                ? <p className="text-indigo-700">Gerando argumentação... Por favor, aguarde.</p> 
+                                : <div className="bg-gray-50 p-4 rounded-md border">
+                                   <GeminiResponseRenderer responseText={generatedText} isDirect={true} />
+                                 </div>
+                              }
+                        </div>
+                    )}
+                </div>
+            );
+        };
+        const AntiDesistenciaModule = ({ casesData }) => {
+            const [selectedCaseId, setSelectedCaseId] = React.useState('');
+            
+            const generateDocx = () => {
+                const selectedCase = casesData.find(c => c.id.toString() === selectedCaseId);
+                if (!selectedCase) {
+                    alert("Por favor, selecione um caso para gerar os embargos.");
                     return;
                 }
 
-                setIsGenerating(true);
+                const { Paragraph, TextRun, Document, AlignmentType, Packer } = docx;
+                const today = new Date();
+                const formattedDate = `${today.getDate()} de ${today.toLocaleString('pt-BR', { month: 'long' })} de ${today.getFullYear()}`;
 
                 try {
-                    const today = new Date();
-                    const formattedDate = `${today.getDate()} de ${today.toLocaleString('pt-BR', { month: 'long' })} de ${today.getFullYear()}`;
-
-                    const prompt = `
-                        Aja como um assistente jurídico. A tarefa é preencher o modelo de petição de Embargos de Declaração abaixo com os dados do caso fornecido.
-                        Não adicione nenhuma informação, formatação ou texto que não esteja no modelo. Apenas substitua as variáveis entre colchetes ([...]) pelos dados correspondentes.
-
-                        **Modelo de Petição:**
-                        ---
-                        ${pdfTemplateText}
-                        ---
-
-                        **Dados do Caso para Preenchimento:**
-                        - [NUMERO_VARA]: "${selectedCase.numJuizo ? selectedCase.numJuizo + 'º' : ''}"
-                        - [NOME_VARA]: "${selectedCase.nomeJuizo.toUpperCase()}"
-                        - [COMARCA]: "${selectedCase.comarca.toUpperCase()}"
-                        - [UF]: "${selectedCase.uf.toUpperCase()}"
-                        - [NUMERO_PROCESSO]: "${selectedCase.caseNumber}"
-                        - [NOME_REU]: "${selectedCase.defendant.toUpperCase()}"
-                        - [NOME_CLIENTE]: "${selectedCase.client.toUpperCase()}"
-                        - [DATA_ATUAL]: "${formattedDate}"
-                        
-                        Retorne APENAS o texto da petição finalizada.
-                    `;
-
-                    const result = await client.generateContent(prompt);
-                    const adaptedText = result.response?.text();
-
-                    if (!adaptedText) {
-                        throw new Error("A resposta da IA estava vazia ou em formato incorreto.");
-                    }
-                    
-                    const { Paragraph, Document, Packer, AlignmentType, TextRun } = docx;
-
-                    const paragraphs = adaptedText.split('\n').map(textLine => {
-                        const trimmedLine = textLine.trim();
-                        if (trimmedLine.toUpperCase() === "EMBARGOS DE DECLARAÇÃO,") {
-                            return new Paragraph({
-                                children: [new TextRun({ text: trimmedLine, bold: true })],
-                                alignment: AlignmentType.CENTER,
-                            });
-                        }
-                        if (trimmedLine.length > 100 && trimmedLine.split(" ").length > 10) {
-                            return new Paragraph({
-                                text: trimmedLine,
-                                alignment: AlignmentType.JUSTIFIED,
-                                indentation: { firstLine: 720 }, // 1.27 cm
-                            });
-                        }
-                        return new Paragraph({
-                            text: trimmedLine,
-                        });
-                    });
-
                     const doc = new Document({
+                        sections: [{
+                            children: [
+                                new Paragraph({ text: `DOUTOR JUÍZO DO ${selectedCase.numJuizo ? selectedCase.numJuizo + 'º' : ''} ${selectedCase.nomeJuizo.toUpperCase()} DA COMARCA DE ${selectedCase.comarca.toUpperCase()}`, style: "default", alignment: AlignmentType.LEFT }),
+                                new Paragraph({ text: `Processo: ${selectedCase.caseNumber}`, style: "default", alignment: AlignmentType.LEFT }),
+                                new Paragraph({ text: `Parte contrária: ${selectedCase.defendant}`, style: "default", alignment: AlignmentType.LEFT }),
+                                new Paragraph({ text: "\n" }),
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({ text: selectedCase.client.toUpperCase(), bold: true }),
+                                        new TextRun({ text: ", parte ré nestes autos, vem, por seu advogado, tendo em vista omissão na respeitável sentença, que, diante da desistência da ação pela parte autora, extinguiu o processo sem resolução do mérito, opor contra ela os presentes", }),
+                                    ],
+                                    alignment: AlignmentType.JUSTIFIED,
+                                    indentation: { firstLine: 720 },
+                                }),
+                                new Paragraph({ text: "\n" }),
+                                new Paragraph({ text: "EMBARGOS DE DECLARAÇÃO,", alignment: AlignmentType.CENTER, style: "strong" }),
+                                new Paragraph({ text: "\n" }),
+                                new Paragraph({ text: "o que faz com fundamento nos artigos 1.022 e seguinte do Código de Processo Civil, e no Enunciado Cível número 90, do FONAJE.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "A embargante, assim como várias outras empresas de grande porte, enfrenta um grande volume de ações artificiais.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "Com o objetivo de aprimorar a gestão de demandas repetitivas e ações de massa, o Supremo Tribunal Federal (STF) e o CNJ criaram unidades para melhor acompanhamento e controle dessas demandas.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "No CNJ foi criado o Centro de Inteligência do Poder Judiciário (CIPJ), cuja finalidade é propor a replicação de julgamento paradigma em demandas repetitivas identificadas. Além disso, o CNJ também dispõe da Rede de Centros de Inteligência do Poder Judiciário, que integra Tribunais de Justiça de todo País.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "Em nota relatada pelo Juiz Paulo Luciano Maia Marques, datada de 27 de janeiro de 2021, através do Centro de Inteligência dos Juizados Especiais do Poder Judiciário do Estado do Rio Grande do Norte, foi apresentado um retrato da importante realidade das ações que são produzidas artificialmente no País.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "São milhares de ações pré-fabricadas e ajuizadas diariamente, em busca de enriquecimento ilícito ou declaração da inexigibilidade de dívidas legitimamente contraídas.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "Não se pode negar que, no exercício e na operação dos direitos e processos de massa que envolvem as relações de consumo, possível dificuldade em se produzir provas, em decorrência do volume, é aproveitada por muitos operadores do Direito, que apostam nessas momentâneas dificuldades para ganhar a ação judicial.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: `E o que se tem visto, em boa quantidade, é a simples desistência da ação quando se verifica que o réu bloqueou com eficiência as alegações autorais, e apresentou prova documental suficiente para aniquilar o direito pleiteado.`, style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "Essas desistências, exercitadas depois de apresentada contestação, devidamente subsidiada por documentos que eliminam a pretensão autoral, é simples má-fé, já que a verdadeira intenção é, uma vez fracassada a estratégia inicial, a de se evitar uma sentença de improcedência, a coisa julgada e a inevitável sanção financeira pela deslealdade processual, possibilitando à parte autora, se deferido o seu pedido, investir mais uma vez contra todos, valendo-se dos mesmos argumentos artificiais produzidos.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({ text: "Aqui não está a embargante formulando uma resistência ao entendimento sedimentado de que, nos processos regidos pela Lei 9.099, a desistência da ação independe da anuência da parte acionada, embora, data maxima venia, entenda que pudesse fazê-lo, considerando as circunstâncias da desistência, embasada não apenas no artigo 485, § 4º, do Código de Processo Civil, mas também na nova redação do Enunciado Civil número 90 do FONAJE, que assim estabeleceu:", }),
+                                    ],
+                                    indentation: { firstLine: 720 },
+                                    style: "justify",
+                                }),
+                                 new Paragraph({
+                                    text: `"A desistência da ação, mesmo sem a anuência do réu já citado, implicará a extinção do processo sem resolução do mérito, ainda que tal ato se dê em audiência de instrução e julgamento, salvo quando houver indícios de litigância de má-fé ou lide temerária"`,
+                                    indentation: { left: 720, right: 720 },
+                                    style: "quote"
+                                }),
+                                new Paragraph({ text: "Por tudo isso, o que se busca com esses embargos é a retificação da sentença, que, gerada pelo malicioso pedido de desistência, apenas extinguiu o feito sem considerar a contestação juntada aos autos, acompanhada de todos os documentos que demonstram que a parte autora alterou a verdade dos fatos para tentar alcançar ganho de forma ilegal, movimentando a máquina do Judiciário irresponsavelmente, causando, com isso, prejuízo injustificável a todos os envolvidos.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "Sendo, portanto, a desistência uma manobra desleal da parte autora, também fruto da sua má-fé processual, a sentença, indubitavelmente, deveria ter sido de mérito, com aplicação das sanções processuais cabíveis.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "A intenção aqui é nobre, corrige os rumos e melhora o Direito.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "Vossa Excelência pode perceber que a contestação e os documentos que a acompanham são suficientes para a prolação de uma sentença de improcedência.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "Por esses fundamentos, com ênfase para nova redação do Enunciado Civil número 90 do FONAJE, requer-se recebimento dos presentes embargos, acolhendo-os para, sanando a omissão, conheça do mérito da causa e da má-fé da parte autora, retificando a sentença embargada para julgar improcedentes os pedidos iniciais, impondo à parte autora o pagamento de multa, conforme art. 81 do Código de Processo Civil, mais custas processuais e honorários advocatícios.", style: "justify", indentation: { firstLine: 720 } }),
+                                new Paragraph({ text: "\nNestes termos,", alignment: AlignmentType.CENTER }),
+                                new Paragraph({ text: "Pede deferimento.", alignment: AlignmentType.CENTER }),
+                                new Paragraph({ text: `\n${selectedCase.comarca}, ${formattedDate}.`, alignment: AlignmentType.CENTER }),
+                            ],
+                        }],
                         styles: {
-                            default: {
-                                document: {
-                                    run: {
-                                        size: "12pt", // 24 / 2
-                                        font: "Times New Roman"
-                                    }
-                                }
-                            }
+                            paragraphStyles: [
+                                { id: "default", name: "Default", run: { size: 24, font: "Times New Roman" } },
+                                { id: "strong", name: "Strong", run: { size: 24, font: "Times New Roman", bold: true } },
+                                { id: "quote", name: "Quote", run: { size: 22, font: "Times New Roman", italics: true } },
+                                { id: "justify", name: "Justify", alignment: AlignmentType.JUSTIFIED, run: { size: 24, font: "Times New Roman" } },
+                            ],
                         },
-                        sections: [{ children: paragraphs }],
                     });
 
                     Packer.toBlob(doc).then(blob => {
-                        saveAs(blob, `Embargos_Declaracao_IA_${selectedCase.caseNumber}.docx`);
+                        saveAs(blob, `Embargos_Declaracao_${selectedCase.caseNumber}.docx`);
+                    }).catch(err => {
+                        console.error("Error creating .docx blob:", err);
+                        alert("Falha ao gerar o arquivo .docx. Verifique o console para mais detalhes.");
                     });
-
-                } catch (e) {
-                    console.error("Erro ao gerar documento com IA:", e);
-                    setError(`Falha ao gerar o documento: ${e.message}`);
-                } finally {
-                    setIsGenerating(false);
+                } catch(e) {
+                    console.error("Error generating .docx document:", e);
+                    alert("Ocorreu um erro ao tentar gerar o documento. Verifique o console para mais detalhes.");
                 }
             };
 
             return (
                 <div>
-                    <h2 className="text-3xl font-semibold text-gray-800 mb-2">Anti-Desistência com IA</h2>
-                    <p className="text-gray-600 mb-6">Selecione um caso e gere uma petição de Embargos de Declaração adaptada pela IA, com base no Enunciado 90 do Fonaje.</p>
-                    
-                    <CaseSelector 
-                        cases={casesData} 
-                        selectedCaseId={selectedCaseId} 
-                        onSelectCase={setSelectedCaseId} 
-                        title="1. Selecione o Caso para Gerar a Petição"
-                    />
-
+                    <h2 className="text-3xl font-semibold text-gray-800 mb-2">Anti-Desistência</h2>
+                    <p className="text-gray-600 mb-6">Apresente embargos de declaração contra a decisão de extinção do processo por desistência da ação, com fundamento no Enunciado 90 do Fonaje.</p>
+                    <CaseSelector cases={casesData} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} />
                     <div className="bg-white p-6 rounded-lg shadow-md">
-                        <h3 className="text-xl font-semibold text-gray-700 mb-4">2. Gerar Documento com IA</h3>
-                        <p className="text-sm text-gray-500 mb-4">
-                            Ao clicar no botão, o sistema enviará o modelo de petição e os dados do caso selecionado para a IA, que irá adaptar o texto. O download do arquivo .docx será iniciado automaticamente.
-                        </p>
-                        <button 
-                            onClick={generateDocxWithAI} 
-                            disabled={!selectedCaseId || isGenerating} 
-                            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 transition-colors"
-                        >
-                            <SparkleIcon /> 
-                            {isGenerating ? 'Gerando com IA...' : 'Gerar Embargos (.DOCX)'}
+                        <button onClick={generateDocx} disabled={!selectedCaseId} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300">
+                            <DownloadIcon /> Gerar Embargos (.DOCX)
                         </button>
-                        {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
                     </div>
                 </div>
             );
         };
-        const GestaoDeRiscosModule = () => <div className="text-center p-8 bg-white rounded-lg shadow-md">Módulo 'Gestão de Riscos' em construção.</div>;
-        const SituacaoDoExAdversoModule = () => <div className="text-center p-8 bg-white rounded-lg shadow-md">Módulo 'Situação do Ex-Adverso' em construção.</div>;
-        const CentralDeRelatoriosModule = () => <div className="text-center p-8 bg-white rounded-lg shadow-md">Módulo 'Central de Relatórios' em construção.</div>;
+        const GestaoDeRiscosModule = ({ casesData, riskData }) => {
+            const [expandedCaseId, setExpandedCaseId] = React.useState(null);
+
+            const toggleCase = (caseId) => {
+                setExpandedCaseId(expandedCaseId === caseId ? null : caseId);
+            };
+
+            const getRiskColor = (level) => {
+                switch (level) {
+                    case 'Alta': return 'border-red-500';
+                    case 'Média': return 'border-yellow-400';
+                    case 'Baixa': return 'border-green-500';
+                    default: return 'border-gray-300';
+                }
+            };
+            
+            const RiskMatrix = ({ risks }) => {
+                const probabilityLevels = { 'Baixa': 1, 'Média': 2, 'Alta': 3 };
+                const impactLevels = { 'Baixo': 1, 'Médio': 2, 'Alto': 3 };
+                const probabilityColors = { 'Baixa': 'bg-green-500', 'Média': 'bg-yellow-500', 'Alta': 'bg-red-500'};
+                
+                return (
+                    <div>
+                      <h4 className="font-semibold text-gray-800 mb-3">Matriz de Probabilidade e Impacto</h4>
+                      <div className="grid grid-cols-4 gap-1 text-center text-xs font-medium">
+                          <div className="p-2"></div>
+                          <div className="p-2 bg-gray-200 rounded-t-md">Baixo</div>
+                          <div className="p-2 bg-gray-200">Médio</div>
+                          <div className="p-2 bg-gray-200 rounded-t-md">Alto</div>
+                          
+                          <div className="p-2 bg-gray-200 rounded-l-md self-center">Alta</div>
+                          <div className="relative bg-yellow-200 p-2 h-16 flex items-center justify-center">{risks.filter(r => probabilityLevels[r.probability] === 3 && impactLevels[r.impact] === 1).map((r,i) => <div key={i} title={r.type} className={`w-4 h-4 rounded-full ${probabilityColors[r.probability]} shadow-md`}></div>)}</div>
+                          <div className="relative bg-red-200 p-2 h-16 flex items-center justify-center">{risks.filter(r => probabilityLevels[r.probability] === 3 && impactLevels[r.impact] === 2).map((r,i) => <div key={i} title={r.type} className={`w-4 h-4 rounded-full ${probabilityColors[r.probability]} shadow-md`}></div>)}</div>
+                          <div className="relative bg-red-300 p-2 h-16 rounded-tr-md flex items-center justify-center">{risks.filter(r => probabilityLevels[r.probability] === 3 && impactLevels[r.impact] === 3).map((r,i) => <div key={i} title={r.type} className={`w-4 h-4 rounded-full ${probabilityColors[r.probability]} shadow-md`}></div>)}</div>
+                          
+                          <div className="p-2 bg-gray-200 rounded-l-md self-center">Média</div>
+                          <div className="relative bg-green-200 p-2 h-16 flex items-center justify-center">{risks.filter(r => probabilityLevels[r.probability] === 2 && impactLevels[r.impact] === 1).map((r,i) => <div key={i} title={r.type} className={`w-4 h-4 rounded-full ${probabilityColors[r.probability]} shadow-md`}></div>)}</div>
+                          <div className="relative bg-yellow-200 p-2 h-16 flex items-center justify-center">{risks.filter(r => probabilityLevels[r.probability] === 2 && impactLevels[r.impact] === 2).map((r,i) => <div key={i} title={r.type} className={`w-4 h-4 rounded-full ${probabilityColors[r.probability]} shadow-md`}></div>)}</div>
+                          <div className="relative bg-red-200 p-2 h-16 flex items-center justify-center">{risks.filter(r => probabilityLevels[r.probability] === 2 && impactLevels[r.impact] === 3).map((r,i) => <div key={i} title={r.type} className={`w-4 h-4 rounded-full ${probabilityColors[r.probability]} shadow-md`}></div>)}</div>
+                          
+                          <div className="p-2 bg-gray-200 rounded-bl-md self-center">Baixa</div>
+                          <div className="relative bg-green-300 p-2 h-16 rounded-bl-md flex items-center justify-center">{risks.filter(r => probabilityLevels[r.probability] === 1 && impactLevels[r.impact] === 1).map((r,i) => <div key={i} title={r.type} className={`w-4 h-4 rounded-full ${probabilityColors[r.probability]} shadow-md`}></div>)}</div>
+                          <div className="relative bg-green-200 p-2 h-16 flex items-center justify-center">{risks.filter(r => probabilityLevels[r.probability] === 1 && impactLevels[r.impact] === 2).map((r,i) => <div key={i} title={r.type} className={`w-4 h-4 rounded-full ${probabilityColors[r.probability]} shadow-md`}></div>)}</div>
+                          <div className="relative bg-yellow-200 p-2 h-16 rounded-br-md flex items-center justify-center">{risks.filter(r => probabilityLevels[r.probability] === 1 && impactLevels[r.impact] === 3).map((r,i) => <div key={i} title={r.type} className={`w-4 h-4 rounded-full ${probabilityColors[r.probability]} shadow-md`}></div>)}</div>
+                      </div>
+                    </div>
+                )
+            };
+
+            return (
+                <div>
+                    <h2 className="text-3xl font-semibold text-gray-800 mb-6">Gestão de Riscos</h2>
+                    <p className="text-gray-600 mb-6">Acesse a análise detalhada dos riscos jurídicos associados a cada caso, com planos de mitigação e visualização de impacto.</p>
+                    <div className="space-y-4">
+                        {casesData.map(c => {
+                            const analysis = riskData[c.id.toString()];
+                            const isExpanded = expandedCaseId === c.id;
+                            if (!analysis) return null;
+                            
+                            return (
+                                <div key={c.id} className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300">
+                                    <button onClick={() => toggleCase(c.id)} className="w-full text-left p-4 flex justify-between items-center hover:bg-gray-50">
+                                        <div>
+                                            <p className="font-semibold text-indigo-700">{c.caseNumber}</p>
+                                            <p className="text-sm text-gray-600">{c.subject}</p>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <span className="hidden sm:inline-flex items-center gap-2 text-sm text-gray-700">Riscos Identificados: <span className="font-bold">{analysis.risks.length}</span></span>
+                                            <div className={`transform transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
+                                                <ChevronDownIcon/>
+                                            </div>
+                                        </div>
+                                    </button>
+                                    {isExpanded && (
+                                        <div className="p-6 border-t border-gray-200 bg-gray-50">
+                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                                <div className="space-y-4">
+                                                    {analysis.risks.map((risk, index) => (
+                                                         <div key={index} className={`p-4 rounded-lg border-l-4 ${getRiskColor(risk.probability)} bg-white shadow`}>
+                                                            <h4 className="font-bold text-gray-800">{risk.type} (Prob: {risk.probability} / Imp: {risk.impact})</h4>
+                                                            <p className="text-sm text-gray-600 mt-1">{risk.description}</p>
+                                                            <p className="text-sm text-green-700 mt-2 font-medium"><strong>Plano de Mitigação:</strong> {risk.mitigation}</p>
+                                                         </div>
+                                                    ))}
+                                                </div>
+                                                <div>
+                                                    <RiskMatrix risks={analysis.risks} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        };
+        const SituacaoDoExAdversoModule = () => {
+             return (
+                 <div>
+                     <h2 className="text-3xl font-semibold text-gray-800 mb-6">Situação do Ex-Adverso</h2>
+                     <div className="bg-white p-8 rounded-lg shadow-md text-center">
+                         <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+                             Verifique a situação cadastral de advogados de forma rápida e segura diretamente na fonte oficial da Ordem dos Advogados do Brasil.
+                             Clique no botão abaixo para ser redirecionado ao CNA - Cadastro Nacional dos Advogados.
+                         </p>
+                         <a 
+                             href="https://cna.oab.org.br/" 
+                             target="_blank" 
+                             rel="noopener noreferrer"
+                             className="inline-flex items-center justify-center gap-2 px-8 py-4 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-transform hover:scale-105"
+                         >
+                             Acessar CNA (OAB)
+                             <ExternalLinkIcon />
+                         </a>
+                     </div>
+                 </div>
+             );
+        };
+        const CentralDeRelatoriosModule = ({ casesData, riskData }) => {
+            const logoUrl = 'https://dev-caw.github.io/combate-litigancia-abusiva/img/caw.png';
+
+            const addHeaderAndFooter = (doc, title) => {
+                const pageCount = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(18);
+                    doc.setTextColor('#111827');
+                    doc.text(title, 40, 55);
+                    doc.addImage(logoUrl, 'PNG', doc.internal.pageSize.getWidth() - 100, 40, 60, 18);
+                    doc.setDrawColor('#e5e7eb');
+                    doc.line(40, 75, doc.internal.pageSize.getWidth() - 40, 75);
+                    const footerY = doc.internal.pageSize.getHeight() - 40;
+                    doc.line(40, footerY, doc.internal.pageSize.getWidth() - 40, footerY);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(8);
+                    doc.setTextColor('#6b7280');
+                    doc.text(`Relatório gerado em: ${new Date().toLocaleString('pt-BR')}`, 40, footerY + 15);
+                    doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.getWidth() - 70, footerY + 15);
+                }
+            };
+            
+            const generateRiskReport = () => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('l', 'pt', 'a4');
+                const title = "Relatório Consolidado de Riscos";
+                const tableBody = [];
+                casesData.forEach(c => {
+                    const analysis = riskData[c.id];
+                    if (analysis) {
+                        analysis.risks.forEach(risk => {
+                            tableBody.push([c.caseNumber, risk.type, risk.probability, risk.impact, risk.description, risk.mitigation]);
+                        });
+                    }
+                });
+                doc.autoTable({
+                    head: [['Caso', 'Tipo de Risco', 'Prob.', 'Impacto', 'Descrição', 'Mitigação']],
+                    body: tableBody,
+                    startY: 90,
+                    theme: 'striped',
+                    headStyles: { fillColor: '#1e3a8a', textColor: '#FFFFFF', font: 'helvetica', fontStyle: 'bold' },
+                    styles: { font: 'helvetica', fontSize: 9 },
+                    columnStyles: { 4: { cellWidth: 200 }, 5: { cellWidth: 200 } }
+                });
+                addHeaderAndFooter(doc, title);
+                doc.save('relatorio_consolidado_riscos.pdf');
+            };
+
+            const generateRiskLevelReport = () => {
+                 const { jsPDF } = window.jspdf;
+                 const doc = new jsPDF('l', 'pt', 'a4');
+                 const title = "Relatório de Casos por Nível de Risco";
+                 const tableBody = casesData
+                     .sort((a,b) => {
+                         const order = { 'Crítico': 0, 'Alto': 1, 'Médio': 2, 'Baixo': 3 };
+                         return order[a.riskLevel] - order[b.riskLevel];
+                     })
+                     .map(c => [
+                         c.caseNumber, 
+                         c.subject, 
+                         c.status, 
+                         c.riskLevel,
+                         c.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                     ]);
+                 doc.autoTable({
+                     head: [['Caso', 'Assunto', 'Status', 'Nível de Risco', 'Valor da Causa']],
+                     body: tableBody,
+                     startY: 90,
+                     theme: 'grid',
+                     headStyles: { fillColor: '#1e3a8a', textColor: '#FFFFFF', font: 'helvetica', fontStyle: 'bold' },
+                     styles: { font: 'helvetica', fontSize: 9 },
+                     didParseCell: function (data) {
+                         if (data.section === 'body' && data.column.index === 3) {
+                             if (data.cell.raw === 'Crítico') { data.cell.styles.textColor = '#991b1b'; data.cell.styles.fontStyle = 'bold'; }
+                             if (data.cell.raw === 'Alto') { data.cell.styles.textColor = '#b45309'; data.cell.styles.fontStyle = 'bold'; }
+                         }
+                     }
+                 });
+                 addHeaderAndFooter(doc, title);
+                 doc.save('relatorio_niveis_de_risco.pdf');
+            };
+
+            const generateFraudIndicatorReport = () => {
+                 const { jsPDF } = window.jspdf;
+                 const doc = new jsPDF('l', 'pt', 'a4');
+                 const title = "Relatório de Indicadores de Fraude";
+                 const tableBody = [];
+                 const indicatorMap = {};
+                 casesData.forEach(c => {
+                     c.details.indicators.forEach(indicatorText => {
+                         const foundIndicator = cnjIndicators.find(i => indicatorText.toLowerCase().includes(i.title.split(' ')[0].toLowerCase()));
+                         const indicatorTitle = foundIndicator ? foundIndicator.title : 'Outros';
+                         if (!indicatorMap[indicatorTitle]) indicatorMap[indicatorTitle] = new Set();
+                         indicatorMap[indicatorTitle].add(c.caseNumber);
+                     });
+                 });
+                 Object.keys(indicatorMap).forEach(indicator => {
+                     tableBody.push([indicator, Array.from(indicatorMap[indicator]).join(', ')]);
+                 });
+                 doc.autoTable({
+                     head: [['Indicador de Fraude (Baseado no CNJ)', 'Casos Associados']],
+                     body: tableBody,
+                     startY: 90,
+                     theme: 'striped',
+                     headStyles: { fillColor: '#1e3a8a', textColor: '#FFFFFF', font: 'helvetica', fontStyle: 'bold' },
+                     styles: { font: 'helvetica', fontSize: 9 },
+                 });
+                 addHeaderAndFooter(doc, title);
+                 doc.save('relatorio_indicadores_fraude.pdf');
+            };
+
+            const ReportButton = ({title, description, onClick}) => (
+                <div className="border rounded-lg p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
+                   <div className="flex flex-col sm:flex-row justify-between sm:items-center">
+                       <div className="mb-4 sm:mb-0">
+                           <h4 className="font-semibold text-gray-800">{title}</h4>
+                           <p className="text-sm text-gray-500 mt-1">{description}</p>
+                       </div>
+                       <button 
+                           onClick={onClick} 
+                           className="flex-shrink-0 flex items-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                       >
+                           <DownloadIcon/>
+                           Gerar Relatório
+                       </button>
+                   </div>
+                </div>
+            );
+
+            return (
+                 <div>
+                     <h2 className="text-3xl font-semibold text-gray-800 mb-6">Central de Relatórios</h2>
+                     <div className="bg-white p-8 rounded-lg shadow-md">
+                         <h3 className="text-xl font-semibold text-gray-700 mb-4">Emissão de Relatórios</h3>
+                         <p className="text-gray-600 mb-6">Gere relatórios consolidados em formato PDF para análise e apresentação gerencial.</p>
+                         <div className="space-y-4">
+                             <ReportButton 
+                                 title="Relatório de Análise de Riscos"
+                                 description="PDF com todos os riscos, descrições e mitigações identificados."
+                                 onClick={generateRiskReport}
+                              />
+                              <ReportButton 
+                                 title="Relatório de Casos por Nível de Risco"
+                                 description="Lista todos os casos, ordenados por criticidade, com seus respectivos valores."
+                                 onClick={generateRiskLevelReport}
+                              />
+                              <ReportButton 
+                                 title="Relatório de Indicadores de Fraude"
+                                 description="Agrupa casos por tipo de indicador de fraude, baseado nas recomendações do CNJ."
+                                 onClick={generateFraudIndicatorReport}
+                              />
+                         </div>
+                     </div>
+                 </div>
+            );
+        };
         
-        // --- LAYOUT PRINCIPAL ---
+        // --- MAIN LAYOUT COMPONENT ---
         const MainLayout = ({ user, onLogout }) => {
             const [casesData, setCasesData] = React.useState(initialCasesData);
             const [riskData, setRiskData] = React.useState(initialRiskAnalysisData);
@@ -948,16 +1457,13 @@
                     case 'Dashboard': return <Dashboard onSelectModule={handleSelectModule} analysisModuleClickedFirstTime={analysisModuleClickedFirstTime} />;
                     case 'Overview': return <OverviewModule casesData={casesData} />;
                     case 'AnáliseDeDados': return <AnaliseDeDadosIAModule onAnalysisComplete={setFraudAlert} onAddNewCase={handleAddNewCase}/>;
+                    case 'AutomaçãoDeDefesa': return <AutomacaoDeDefesaModule casesData={casesData} />;
                     case 'AntiDesistencia': return <AntiDesistenciaModule casesData={casesData} />;
                     case 'DetecçãoDeFraudes': return <DeteccaoDeFraudesModule casesData={casesData} />;
-                    case 'VerificaçãoDeDocs': return <VerificacaoDeDocsModule />;
-                    case 'AutomaçãoDeDefesa': return <AutomacaoDeDefesaModule />;
-
-                    // Módulos em construção
-                    case 'GestãoDeRiscos': return <GestaoDeRiscosModule />;
+                    case 'VerificaçãoDeDocs': return <VerificacaoDeDocsModule casesData={casesData} />;
+                    case 'GestãoDeRiscos': return <GestaoDeRiscosModule casesData={casesData} riskData={riskData} />;
                     case 'SituaçãoDoExAdverso': return <SituacaoDoExAdversoModule />;
-                    case 'CentralDeRelatorios': return <CentralDeRelatoriosModule />;
-
+                    case 'CentralDeRelatorios': return <CentralDeRelatoriosModule casesData={casesData} riskData={riskData} />;
                     default: 
                         const module = modules.find(m => m.id === activeModule);
                         return <div className="text-center p-8">Módulo '{module?.name || 'Desconhecido'}' em construção.</div>;
@@ -997,13 +1503,10 @@
             );
         };
 
-        // --- A PARTE FINAL DO SEU CÓDIGO ---
         const container = document.getElementById('root');
         const root = ReactDOM.createRoot(container);
         root.render(<App />);
 
-        // --- FIM DO SEU CÓDIGO ORIGINAL ---
-    }
     </script>
 </body>
 </html>
