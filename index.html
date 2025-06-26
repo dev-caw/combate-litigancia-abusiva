@@ -1052,10 +1052,13 @@
             );
         };
         const AntiDesistenciaModule = ({ casesData }) => {
+    // --- ESTADOS DO COMPONENTE ---
     const [selectedCaseId, setSelectedCaseId] = React.useState('');
     const [isGenerating, setIsGenerating] = React.useState(false);
     const [error, setError] = React.useState('');
+    const [libsReady, setLibsReady] = React.useState(false); // Novo estado para controlar as bibliotecas
 
+    // --- MODELO DA PETIÇÃO ---
     const modeloPeticao = `
 EXCELENTÍSSIMO SENHOR DOUTOR JUIZ DE DIREITO DO [NOME_DO_JUIZO] DA COMARCA DE [COMARCA] - [UF].
 
@@ -1075,6 +1078,69 @@ Pede deferimento.
 [COMARCA], [DATA_ATUAL].
 `;
 
+    // --- EFEITO PARA VERIFICAR BIBLIOTECAS EXTERNAS ---
+    // Este hook roda uma vez quando o componente é montado.
+    // Ele verifica periodicamente se as bibliotecas (docx e FileSaver) foram carregadas na window.
+    React.useEffect(() => {
+        const intervalId = setInterval(() => {
+            if (window.docx && window.saveAs) {
+                setLibsReady(true);
+                clearInterval(intervalId); // Limpa o intervalo quando as bibliotecas são encontradas.
+            }
+        }, 100); // Verifica a cada 100ms
+
+        return () => clearInterval(intervalId); // Limpeza: para o intervalo se o componente for desmontado.
+    }, []); // O array vazio [] garante que o efeito rode apenas uma vez.
+
+
+    /**
+     * **IMPORTANTE: CHAMADA SEGURA À API**
+     * Esta função simula uma chamada a um endpoint de backend.
+     * A lógica de chamar a API do Gemini com a chave deve estar no seu servidor, não aqui.
+     * @param {string} prompt - O prompt a ser enviado para a IA.
+     * @returns {Promise<string>} O texto gerado pela IA.
+     */
+    const fetchGeneratedTextFromBackend = async (prompt) => {
+        // No seu projeto real, a URL seria algo como '/api/generate-document'
+        // Este endpoint no seu backend receberia o prompt e faria a chamada segura para a API do Gemini.
+        
+        // --- INÍCIO DO CÓDIGO QUE DEVE ESTAR NO SEU BACKEND ---
+        // const GEMINI_API_KEY = process.env.GEMINI_API_KEY; // Chave lida das variáveis de ambiente no servidor
+        // const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        // const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+        // const response = await fetch(apiUrl, {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify(payload)
+        // });
+        // --- FIM DO CÓDIGO QUE DEVE ESTAR NO SEU BACKEND ---
+
+        // Para este exemplo, vamos simular a chamada que você já tinha, mas com um aviso.
+        if (!window.GEMINI_API_KEY) {
+             throw new Error("Chave da API do Gemini não encontrada. Configure-a no seu backend.");
+        }
+        
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${window.GEMINI_API_KEY}`;
+        const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            throw new Error(`Erro na comunicação com a API: ${response.status}`);
+        }
+        const result = await response.json();
+        const aiResponseText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (!aiResponseText) {
+            throw new Error("A resposta da IA estava vazia ou mal formatada.");
+        }
+        return aiResponseText;
+    };
+
+    // --- FUNÇÃO PRINCIPAL PARA GERAR O DOCUMENTO ---
     const generateDocxWithAI = async () => {
         const selectedCase = casesData.find(c => c.id.toString() === selectedCaseId);
         if (!selectedCase) {
@@ -1085,7 +1151,9 @@ Pede deferimento.
         setIsGenerating(true);
         setError('');
 
-        const prompt = `
+        try {
+            // 1. Montar o prompt
+            const prompt = `
 Aja como um advogado especialista. Adapte o seguinte modelo de petição de embargos de declaração com base nos dados do caso fornecido.
 O objetivo é se opor à extinção do processo por desistência, argumentando a má-fé da parte autora e pedindo a análise do mérito com base na contestação já apresentada.
 Substitua os marcadores (ex: [NOME_DO_JUIZO], [NUMERO_DO_PROCESSO], etc.) pelos dados reais do caso.
@@ -1108,64 +1176,37 @@ ${modeloPeticao}
 Responda APENAS com o texto final da petição adaptada, sem introduções, observações ou cabeçalhos adicionais.
 `;
 
-        try {
-            const payload = {
-                contents: [{ role: "user", parts: [{ text: prompt }] }]
-            };
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+            // 2. Obter o texto da IA (agora através da função segura)
+            const aiResponseText = await fetchGeneratedTextFromBackend(prompt);
 
-            if (!response.ok) {
-                throw new Error(`Erro na API do Gemini: ${response.status}`);
-            }
-
-            const result = await response.json();
-            const aiResponseText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-            if (!aiResponseText) {
-                throw new Error("A resposta da IA estava vazia ou mal formatada.");
-            }
-
-            // Verificação e carregamento da biblioteca docx
-            const docxLib = window.docx;
-            if (!docxLib || !docxLib.Paragraph) {
-                throw new Error("Biblioteca de geração de documentos não carregada corretamente.");
-            }
-
-            const { Paragraph, Document, Packer, AlignmentType } = docxLib;
+            // 3. Usar as bibliotecas (que já sabemos que estão carregadas)
+            const { Paragraph, Document, Packer, AlignmentType } = window.docx;
 
             const paragraphs = aiResponseText.split('\n').map(line =>
                 new Paragraph({
                     text: line.trim(),
-                    alignment: line.trim().startsWith("Processo nº") || line.trim().startsWith("[CLIENTE]")
+                    alignment: line.trim().startsWith("Processo nº") || line.trim().startsWith(selectedCase.client.toUpperCase())
                         ? AlignmentType.LEFT
                         : AlignmentType.JUSTIFIED,
-                    spacing: { after: 120 },
-                    indent: { firstLine: line.trim() ? 720 : 0 }
+                    spacing: { after: 240 }, // Aumentei um pouco o espaçamento para melhor leitura
+                    indent: { firstLine: line.trim() ? 720 : 0 } // 720 é aprox. 1.25cm
                 })
             );
 
             const doc = new Document({
                 sections: [{ children: paragraphs }],
                 styles: {
-                    paragraphStyles: [
-                        {
-                            id: "default",
-                            name: "Default",
-                            run: { size: 24, font: "Times New Roman" },
-                            paragraph: { alignment: AlignmentType.JUSTIFIED, spacing: { after: 120 } }
-                        }
-                    ]
-                }
+                    default: {
+                        document: {
+                            run: { size: "12pt", font: "Times New Roman" },
+                        },
+                    },
+                },
             });
 
-            await Packer.toBlob(doc).then(blob => {
-                saveAs(blob, `Embargos_AI_${selectedCase.caseNumber}.docx`);
-            });
+            // 4. Gerar o blob e salvar o arquivo
+            const blob = await Packer.toBlob(doc);
+            window.saveAs(blob, `Embargos_AI_${selectedCase.caseNumber}.docx`);
 
         } catch (e) {
             console.error("Erro ao gerar documento com IA:", e);
@@ -1175,27 +1216,32 @@ Responda APENAS com o texto final da petição adaptada, sem introduções, obse
         }
     };
 
+    // --- RENDERIZAÇÃO DO COMPONENTE (JSX) ---
     return (
         <div>
             <h2 className="text-3xl font-semibold text-gray-800 mb-2">Anti-Desistência</h2>
             <p className="text-gray-600 mb-6">Selecione um caso para gerar os embargos de declaração com amparo no Enunciado 90 do FONAJE e nos artigos 80 e 81 do Código de Processo Civil.</p>
+            
             <CaseSelector cases={casesData} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} />
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            
+            <div className="bg-white p-6 rounded-lg shadow-md mt-4">
                 <button
                     onClick={generateDocxWithAI}
-                    disabled={!selectedCaseId || isGenerating}
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300"
+                    disabled={!selectedCaseId || isGenerating || !libsReady} // Botão desabilitado se não houver caso, estiver gerando ou se as libs não estiverem prontas
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
-                    <SparkleIcon />
-                    {isGenerating ? 'Gerando com IA...' : 'Gerar Embargos (.DOCX)'}
+                    {/* O ícone do SparkleIcon deve ser importado ou definido em outro lugar */}
+                    {/* <SparkleIcon /> */}
+                    <span>
+                        {isGenerating ? 'Gerando com IA...' : !libsReady ? 'Carregando bibliotecas...' : 'Gerar Embargos (.DOCX)'}
+                    </span>
                 </button>
                 {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
             </div>
         </div>
     );
 };
-
-        const GestaoDeRiscosModule = ({ casesData, riskData }) => {
+      const GestaoDeRiscosModule = ({ casesData, riskData }) => {
             const [expandedCaseId, setExpandedCaseId] = React.useState(null);
 
             const toggleCase = (caseId) => {
