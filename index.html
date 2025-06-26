@@ -845,51 +845,48 @@ const text = result?.response?.parts?.[0]?.text || '';
                     }
                     
                     // d) Construção do documento .docx com a resposta da IA
-                    const { Paragraph, Document, Packer, AlignmentType, TextRun } = docx;
-                    
-                    // Divide o texto retornado pela IA em parágrafos
-                    const paragraphs = adaptedText.split('\n').map(textLine => {
-                         if (textLine.trim().toUpperCase() === "EMBARGOS DE DECLARAÇÃO,") {
-                            return new Paragraph({
-                                text: textLine.trim(),
-                                alignment: AlignmentType.CENTER,
-                                style: "strong"
-                            });
-                        }
-                        // Adiciona recuo na primeira linha da maioria dos parágrafos de texto corrido
-                        if (textLine.length > 100 && textLine.trim().split(" ").length > 10) {
-                             return new Paragraph({
-                                text: textLine.trim(),
-                                alignment: AlignmentType.JUSTIFIED,
-                                indentation: { firstLine: 720 }, // Recuo de 1.27 cm (720 / 20 / 2.54 * 72)
-                             });
-                        }
-                         return new Paragraph({
-                            text: textLine.trim(),
-                         });
-                    });
+                        const { Paragraph, Document, Packer, AlignmentType } = docx; [cite: 284]
 
-                    const doc = new Document({
-                        sections: [{ children: paragraphs }],
-                         styles: {
-                            paragraphStyles: [
-                                { id: "default", name: "Default", run: { size: 24, font: "Times New Roman" } },
-                                { id: "strong", name: "Strong", run: { size: 24, font: "Times New Roman", bold: true } },
-                            ],
-                        },
-                    });
+    const paragraphs = adaptedText.split('\n').map(textLine => {
+        if (textLine.trim().toUpperCase() === "EMBARGOS DE DECLARAÇÃO,") {
+            return new Paragraph({
+                text: textLine.trim(),
+                alignment: AlignmentType.CENTER,
+                style: "strong"
+            });
+        }
+        if (textLine.length > 100 && textLine.trim().split(" ").length > 10) {
+            return new Paragraph({
+                text: textLine.trim(),
+                alignment: AlignmentType.JUSTIFIED,
+                indentation: { firstLine: 720 },
+            });
+        }
+        return new Paragraph({
+            text: textLine.trim(),
+        });
+    });
 
-                    // e) Download automático do .docx
-                    Packer.toBlob(doc).then(blob => {
-                        saveAs(blob, `Embargos_Declaracao_IA_${selectedCase.caseNumber}.docx`);
-                    });
+    const doc = new Document({
+        sections: [{ children: paragraphs }],
+        styles: {
+            paragraphStyles: [
+                { id: "default", name: "Default", run: { size: 24, font: "Times New Roman" } }, [cite: 291]
+                { id: "strong", name: "Strong", run: { size: 24, font: "Times New Roman", bold: true } }, [cite: 291]
+            ],
+        },
+    });
 
-                } catch (e) {
-                    console.error("Erro ao gerar documento com IA:", e);
-                    setError(`Falha ao gerar o documento: ${e.message}`);
-                } finally {
-                    setIsGenerating(false);
-                }
+    Packer.toBlob(doc).then(blob => {
+        saveAs(blob, `Embargos_Declaracao_IA_${selectedCase.caseNumber}.docx`);
+    });
+
+} catch (e) {
+    console.error("Erro ao gerar documento com IA:", e); [cite: 294]
+    setError(`Falha ao gerar o documento: ${e.message}`); [cite: 295]
+} finally {
+    setIsGenerating(false); [cite: 296]
+}
             };
 
             return (
