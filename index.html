@@ -69,22 +69,22 @@
     <div id="root"></div>
 
     <script type="text/babel">
-    // Função que verifica repetidamente se a biblioteca do Google AI está pronta
-    function checkAndRun() {
-        // Tenta verificar se o construtor da API do Gemini já existe no objeto window
-        if (window.google && window.google.generativeai && window.google.generativeai.GoogleGenerativeAI) {
-            // Se existir, chama a função principal que inicia o aplicativo React
+    // Espera o DOM estar pronto E a API do Google estar carregada
+    function startApp() {
+        if (window.google && window.google.generativeai) {
             initializeApp();
         } else {
-            // Se não existir, espera 100 milissegundos e tenta verificar novamente
-            console.log("Aguardando a API do Google AI carregar...");
-            setTimeout(checkAndRun, 100);
+            setTimeout(startApp, 100); // Tenta novamente em 100ms
         }
     }
 
+    // Adiciona um ouvinte para o evento DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', (event) => {
+        startApp();
+    });
+
     // Função principal que contém todo o seu código de aplicativo
     function initializeApp() {
-        console.log("API do Google AI carregada. Inicializando o aplicativo...");
 
         // --- INÍCIO DO SEU CÓDIGO ORIGINAL ---
         // (Copie e cole todo o seu código, desde a configuração das chaves até o final, aqui dentro)
