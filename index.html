@@ -97,7 +97,7 @@
         // --- INICIALIZAÇÃO DOS SERVIÇOS ---
         const genAI = new google.ai.generativelanguage.v1beta.GenerativeAI({
   apiKey: GEMINI_API_KEY,
-
+});
 const client = genAI.getGenerativeModel({ model: "gemini-pro" });
 
         let app;
@@ -990,7 +990,6 @@ const client = genAI.getGenerativeModel({ model: "gemini-pro" });
         const container = document.getElementById('root');
         const root = ReactDOM.createRoot(container);
         root.render(<App />);
-    });
     </script>
 </body>
 </html>
