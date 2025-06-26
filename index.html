@@ -1048,164 +1048,142 @@
             );
         };
         const AntiDesistenciaModule = ({ casesData }) => {
-            const [selectedCaseId, setSelectedCaseId] = React.useState('');
-            const [isGenerating, setIsGenerating] = React.useState(false);
-            const [error, setError] = React.useState('');
-            const [pdfText, setPdfText] = React.useState('');
+    const [selectedCaseId, setSelectedCaseId] = React.useState('');
+    const [isGenerating, setIsGenerating] = React.useState(false);
+    const [error, setError] = React.useState('');
 
-            // Etapa a) e b): Carregar e extrair o texto do PDF na inicialização do módulo.
-            React.useEffect(() => {
-                // URL do arquivo PDF conforme solicitado.
-                const pdfUrl = 'https://dev-caw.github.io/combate-litigancia-abusiva/mdl/embargos.pdf';
+    // Modelo estático de petição (antes extraído de PDF)
+    const modeloPeticao = `
+EXCELENTÍSSIMO SENHOR DOUTOR JUIZ DE DIREITO DO [NOME_DO_JUIZO] DA COMARCA DE [COMARCA] - [UF].
 
-                // Para extrair o texto de um PDF, é necessária uma biblioteca como a 'pdf-lib' ou 'pdf.js'.
-                // Como o ambiente atual não permite a integração direta dessas bibliotecas,
-                // este é um exemplo de como a lógica seria implementada.
-                // Substitua esta simulação pela sua implementação de extração de texto de PDF.
-                const fetchAndExtractPdfText = async () => {
-                    try {
-                        // Simulação da extração de texto do PDF.
-                        // Em um projeto real, você usaria uma biblioteca para ler o conteúdo do PDF aqui.
-                        const extractedText = `
-                        EXCELENTÍSSIMO SENHOR DOUTOR JUIZ DE DIREITO DO [NOME_DO_JUIZO] DA COMARCA DE [COMARCA] - [UF].
+Processo nº: [NUMERO_DO_PROCESSO]
 
-                        Processo nº: [NUMERO_DO_PROCESSO]
+[CLIENTE], já qualificado nos autos da ação em epígrafe que move em face de [PARTE_ADVERSA], vem, respeitosamente, perante Vossa Excelência, por seus procuradores, opor os presentes EMBARGOS DE DECLARAÇÃO em face da r. sentença que extinguiu o processo sem resolução do mérito, com base nas razões de fato e de direito a seguir expostas.
 
-                        [CLIENTE], já qualificado nos autos da ação em epígrafe que move em face de [PARTE_ADVERSA], vem, respeitosamente, perante Vossa Excelência, por seus procuradores, opor os presentes EMBARGOS DE DECLARAÇÃO em face da r. sentença que extinguiu o processo sem resolução do mérito, com base nas razões de fato e de direito a seguir expostas.
+O presente recurso é interposto com o objetivo de sanar omissão na r. sentença, que, diante da desistência da ação pela parte autora, deixou de analisar a contestação e os documentos apresentados, que demonstram a ausência de direito da parte autora e a sua má-fé processual.
 
-                        O presente recurso é interposto com o objetivo de sanar omissão na r. sentença, que, diante da desistência da ação pela parte autora, deixou de analisar a contestação e os documentos apresentados, que demonstram a ausência de direito da parte autora e a sua má-fé processual.
+A desistência da ação, após a apresentação de contestação, especialmente quando a defesa demonstra de forma contundente a improcedência do pedido, não deve ser homologada sem a condenação da parte autora nas verbas de sucumbência e na multa por litigância de má-fé, conforme o Enunciado 90 do FONAJE e os artigos 80 e 81 do Código de Processo Civil.
 
-                        A desistência da ação, após a apresentação de contestação, especialmente quando a defesa demonstra de forma contundente a improcedência do pedido, não deve ser homologada sem a condenação da parte autora nas verbas de sucumbência e na multa por litigância de má-fé, conforme o Enunciado 90 do FONAJE e os artigos 80 e 81 do Código de Processo Civil.
+Diante do exposto, requer o recebimento e provimento dos presentes embargos para sanar a omissão apontada, julgando-se improcedentes os pedidos formulados na inicial e condenando a parte autora por litigância de má-fé.
 
-                        Diante do exposto, requer o recebimento e provimento dos presentes embargos para sanar a omissão apontada, julgando-se improcedentes os pedidos formulados na inicial e condenando a parte autora por litigância de má-fé.
+Termos em que,
+Pede deferimento.
 
-                        Termos em que,
-                        Pede deferimento.
+[COMARCA], [DATA_ATUAL].
+`;
 
-                        [COMARCA], [DATA_ATUAL].
-                        `;
-                        setPdfText(extractedText);
-                    } catch (e) {
-                        console.error("Erro ao carregar ou extrair o texto do PDF:", e);
-                        setError("Falha ao carregar o modelo de petição do PDF.");
-                    }
-                };
+    const generateDocxWithAI = async () => {
+        const selectedCase = casesData.find(c => c.id.toString() === selectedCaseId);
+        if (!selectedCase) {
+            setError("Por favor, selecione um caso para gerar os embargos.");
+            return;
+        }
 
-                fetchAndExtractPdfText();
-            }, []); // O array vazio garante que isso execute apenas uma vez.
+        setIsGenerating(true);
+        setError('');
 
-            const generateDocxWithAI = async () => {
-                const selectedCase = casesData.find(c => c.id.toString() === selectedCaseId);
-                if (!selectedCase) {
-                    setError("Por favor, selecione um caso para gerar os embargos.");
-                    return;
-                }
-                if (!pdfText) {
-                    setError("O texto do modelo de petição (PDF) não foi carregado. Tente novamente.");
-                    return;
-                }
+        const prompt = `
+Aja como um advogado especialista. Adapte o seguinte modelo de petição de embargos de declaração com base nos dados do caso fornecido.
+O objetivo é se opor à extinção do processo por desistência, argumentando a má-fé da parte autora e pedindo a análise do mérito com base na contestação já apresentada.
+Substitua os marcadores (ex: [NOME_DO_JUIZO], [NUMERO_DO_PROCESSO], etc.) pelos dados reais do caso.
+Mantenha a estrutura e o tom formal da petição.
 
-                setIsGenerating(true);
-                setError('');
+**Modelo de Petição:**
+---
+${modeloPeticao}
+---
 
-                // Etapa c): Enviar o texto para a API do Gemini.
-                // CORREÇÃO APLICADA AQUI: Removida a barra invertida extra antes da crase.
-                const prompt = `
-                    Aja como um advogado especialista. Adapte o seguinte modelo de petição de embargos de declaração com base nos dados do caso fornecido.
-                    O objetivo é se opor à extinção do processo por desistência, argumentando a má-fé da parte autora e pedindo a análise do mérito com base na contestação já apresentada.
-                    Substitua os marcadores (ex: [NOME_DO_JUIZO], [NUMERO_DO_PROCESSO], etc.) pelos dados reais do caso.
-                    Mantenha a estrutura e o tom formal da petição.
+**Dados do Caso para Adaptação:**
+- Número do Processo: ${selectedCase.caseNumber}
+- Cliente (Embargante): ${selectedCase.client.toUpperCase()}
+- Parte Adversa (Embargado): ${selectedCase.defendant.toUpperCase()}
+- Juízo: ${(selectedCase.numJuizo ? selectedCase.numJuizo + 'º ' : '') + selectedCase.nomeJuizo.toUpperCase()}
+- Comarca: ${selectedCase.comarca.toUpperCase()}
+- UF: ${selectedCase.uf.toUpperCase()}
+- Data Atual: ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
 
-                    **Modelo de Petição (extraído do PDF):**
-                    ---
-                    \${pdfText}
-                    ---
+Responda APENAS com o texto final da petição adaptada, sem introduções, observações ou cabeçalhos adicionais.
+`;
 
-                    **Dados do Caso para Adaptação:**
-                    - **Número do Processo:** \${selectedCase.caseNumber}
-                    - **Cliente (Embargante):** \${selectedCase.client.toUpperCase()}
-                    - **Parte Adversa (Embargado):** \${selectedCase.defendant.toUpperCase()}
-                    - **Juízo:** \${(selectedCase.numJuizo ? selectedCase.numJuizo + 'º ' : '') + selectedCase.nomeJuizo.toUpperCase()}
-                    - **Comarca:** \${selectedCase.comarca.toUpperCase()}
-                    - **UF:** \${selectedCase.uf.toUpperCase()}
-                    - **Data Atual:** \${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
-
-                    Responda APENAS com o texto final da petição adaptada, sem introduções, observações ou cabeçalhos adicionais.
-                `;
-
-                try {
-                    const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-
-                    if (!response.ok) {
-                        throw new Error(`Erro na API do Gemini: \${response.status}`);
-                    }
-
-                    const result = await response.json();
-                    const aiResponseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-
-                    if (!aiResponseText) {
-                        throw new Error("A resposta da IA estava vazia ou em formato incorreto.");
-                    }
-
-                    // Etapa d): Construir o documento .docx com a resposta da IA.
-                    const { Paragraph, Document, Packer, AlignmentType } = docx;
-
-                    const paragraphs = aiResponseText.split('\\n').map(text =>
-                        new Paragraph({
-                            text: text,
-                            alignment: text.trim().startsWith('Processo nº:') || text.trim().startsWith('[CLIENTE]') ? AlignmentType.LEFT : AlignmentType.JUSTIFIED,
-                            spacing: { after: 120 },
-                            indent: { firstLine: text.trim().startsWith('EXCELENTÍSSIMO') || text.trim() === '' ? 0 : 720 }
-                        })
-                    );
-
-                    const doc = new Document({
-                        sections: [{
-                            children: paragraphs,
-                        }],
-                         styles: {
-                            paragraphStyles: [
-                                {
-                                    id: "default",
-                                    name: "Default",
-                                    run: { size: 24, font: "Times New Roman" },
-                                    paragraph: { alignment: AlignmentType.JUSTIFIED, spacing: { after: 120 } }
-                                },
-                            ],
-                        },
-                    });
-
-                    // Etapa e): Promover o download automático do documento.
-                    Packer.toBlob(doc).then(blob => {
-                        saveAs(blob, `Embargos_AI_\${selectedCase.caseNumber}.docx`);
-                    });
-
-                } catch (e) {
-                    console.error("Erro ao gerar documento com IA:", e);
-                    setError(`Ocorreu um erro: \${e.message}`);
-                } finally {
-                    setIsGenerating(false);
-                }
+        try {
+            const payload = {
+                contents: [{ role: "user", parts: [{ text: prompt }] }]
             };
-            
-            return (
-                <div>
-                    <h2 className="text-3xl font-semibold text-gray-800 mb-2">Anti-Desistência com IA</h2>
-                    <p className="text-gray-600 mb-6">Selecione um caso para que a IA gere uma petição de embargos de declaração, com base no modelo padrão, para se opor à desistência da ação.</p>
-                    <CaseSelector cases={casesData} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} />
-                    <div className="bg-white p-6 rounded-lg shadow-md">
-                        <button onClick={generateDocxWithAI} disabled={!selectedCaseId || isGenerating || !pdfText} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300">
-                            <SparkleIcon />
-                            {isGenerating ? 'Gerando com IA...' : 'Gerar Embargos com IA (.DOCX)'}
-                        </button>
-                        {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
-                        {!pdfText && !error && <p className="text-yellow-600 text-sm mt-4">Carregando modelo de petição...</p>}
-                    </div>
-                </div>
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erro na API do Gemini: ${response.status}`);
+            }
+
+            const result = await response.json();
+            const aiResponseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (!aiResponseText) {
+                throw new Error("A resposta da IA estava vazia ou em formato incorreto.");
+            }
+
+            // Geração do .docx
+            const { Paragraph, Document, Packer, AlignmentType } = docx;
+
+            const paragraphs = aiResponseText.split('\n').map(text =>
+                new Paragraph({
+                    text: text.trim(),
+                    alignment: text.startsWith("Processo nº") || text.startsWith("[CLIENTE]") ? AlignmentType.LEFT : AlignmentType.JUSTIFIED,
+                    spacing: { after: 120 },
+                    indent: { firstLine: text.trim() ? 720 : 0 }
+                })
             );
-        };
+
+            const doc = new Document({
+                sections: [{ children: paragraphs }],
+                styles: {
+                    paragraphStyles: [
+                        {
+                            id: "default",
+                            name: "Default",
+                            run: { size: 24, font: "Times New Roman" },
+                            paragraph: { alignment: AlignmentType.JUSTIFIED, spacing: { after: 120 } }
+                        },
+                    ],
+                },
+            });
+
+            Packer.toBlob(doc).then(blob => {
+                saveAs(blob, `Embargos_AI_${selectedCase.caseNumber}.docx`);
+            });
+
+        } catch (e) {
+            console.error("Erro ao gerar documento com IA:", e);
+            setError(`Ocorreu um erro: ${e.message}`);
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    return (
+        <div>
+            <h2 className="text-3xl font-semibold text-gray-800 mb-2">Anti-Desistência com IA</h2>
+            <p className="text-gray-600 mb-6">Selecione um caso para que a IA gere uma petição de embargos de declaração, com base no modelo padrão.</p>
+            <CaseSelector cases={casesData} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} />
+            <div className="bg-white p-6 rounded-lg shadow-md">
+                <button
+                    onClick={generateDocxWithAI}
+                    disabled={!selectedCaseId || isGenerating}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300"
+                >
+                    <SparkleIcon />
+                    {isGenerating ? 'Gerando com IA...' : 'Gerar Embargos com IA (.DOCX)'}
+                </button>
+                {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
+            </div>
+        </div>
+    );
+};
         const GestaoDeRiscosModule = ({ casesData, riskData }) => {
             const [expandedCaseId, setExpandedCaseId] = React.useState(null);
 
