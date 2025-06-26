@@ -1112,7 +1112,7 @@ Responda APENAS com o texto final da petição adaptada, sem introduções, obse
             const payload = {
                 contents: [{ role: "user", parts: [{ text: prompt }] }]
             };
-            const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key${GEMINI_API_KEY}`;=${GEMINI_API_KEY}`;
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1178,7 +1178,7 @@ Responda APENAS com o texto final da petição adaptada, sem introduções, obse
     return (
         <div>
             <h2 className="text-3xl font-semibold text-gray-800 mb-2">Anti-Desistência</h2>
-            <p className="text-gray-600 mb-6">Selecione um caso para que a IA gere uma petição de embargos de declaração, com base no modelo padrão.</p>
+            <p className="text-gray-600 mb-6">Selecione um caso para gerar os embargos de declaração com amparo no Enunciado 90 do FONAJE e nos artigos 80 e 81 do Código de Processo Civil.</p>
             <CaseSelector cases={casesData} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} />
             <div className="bg-white p-6 rounded-lg shadow-md">
                 <button
