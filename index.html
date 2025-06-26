@@ -70,7 +70,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-    document.addEventListener('DOMContentLoaded', () => {
+
         // --- CONFIGURAÇÃO DE CHAVES DE API ---
         /*
          * ⚠️ ALERTA DE SEGURANÇA CRÍTICO ⚠️
@@ -97,7 +97,7 @@
         // --- INICIALIZAÇÃO DOS SERVIÇOS ---
         const genAI = new google.ai.generativelanguage.v1beta.GenerativeAI({
   apiKey: GEMINI_API_KEY,
-});
+
 const client = genAI.getGenerativeModel({ model: "gemini-pro" });
 
         let app;
