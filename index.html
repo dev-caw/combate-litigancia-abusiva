@@ -83,7 +83,11 @@
             measurementId: "G-70MZCTBNKG"
         };
         const GEMINI_API_KEY = "AIzaSyBP3XKX1TakAgPcipquLgv3Qla4Ca6VhSQ";
-        
+        const client = new google.generativeai.GenerativeModel({
+  model: "gemini-pro",
+  apiKey: "AIzaSyBP3XKX1TakAgPcipquLgv3Qla4Ca6VhSQ"
+});
+
         // --- FIREBASE INITIALIZATION ---
         let app;
         try {
