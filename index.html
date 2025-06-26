@@ -1056,7 +1056,7 @@
     const [selectedCaseId, setSelectedCaseId] = React.useState('');
     const [isGenerating, setIsGenerating] = React.useState(false);
     const [error, setError] = React.useState('');
-    const [libsReady, setLibsReady] = React.useState(false); // Novo estado para controlar as bibliotecas
+    const [libsReady, setLibsReady] = React.useState(false);
 
     // --- MODELO DA PETIÇÃO ---
     const modeloPeticao = `
@@ -1078,44 +1078,48 @@ Pede deferimento.
 [COMARCA], [DATA_ATUAL].
 `;
 
-    // --- EFEITO PARA VERIFICAR BIBLIOTECAS EXTERNAS ---
-    // Este hook roda uma vez quando o componente é montado.
-    // Ele verifica periodicamente se as bibliotecas (docx e FileSaver) foram carregadas na window.
+    // --- EFEITO ROBUSTO PARA VERIFICAR BIBLIOTECAS EXTERNAS ---
+    // Este hook agora inclui um tempo limite para evitar que a aplicação fique travada.
     React.useEffect(() => {
-        const intervalId = setInterval(() => {
+        const CHECK_INTERVAL = 100;  // Verifica a cada 100ms
+        const LOAD_TIMEOUT = 15000; // Define um tempo limite de 15 segundos
+
+        let intervalId = null;
+        let timeoutId = null;
+
+        // Função para limpar ambos os timers e evitar loops infinitos ou execuções tardias
+        const cleanupTimers = () => {
+            clearInterval(intervalId);
+            clearTimeout(timeoutId);
+        };
+
+        intervalId = setInterval(() => {
+            // Se as bibliotecas foram carregadas com sucesso
             if (window.docx && window.saveAs) {
                 setLibsReady(true);
-                clearInterval(intervalId); // Limpa o intervalo quando as bibliotecas são encontradas.
+                cleanupTimers(); // Para de verificar e cancela o timeout de erro.
             }
-        }, 100); // Verifica a cada 100ms
+        }, CHECK_INTERVAL);
 
-        return () => clearInterval(intervalId); // Limpeza: para o intervalo se o componente for desmontado.
-    }, []); // O array vazio [] garante que o efeito rode apenas uma vez.
+        timeoutId = setTimeout(() => {
+            // Se após 15 segundos as bibliotecas ainda não carregaram, consideramos uma falha.
+            // A verificação '!libsReady' garante que isso não execute se as libs carregarem no último segundo.
+            if (!libsReady) {
+                cleanupTimers(); // Para o intervalo que não teve sucesso.
+                setError("Falha ao carregar as bibliotecas de documentos. Verifique sua conexão e tente recarregar a página.");
+            }
+        }, LOAD_TIMEOUT);
+
+        // A função de retorno do useEffect é a função de limpeza principal.
+        return cleanupTimers;
+    }, [libsReady]); // Adicionado 'libsReady' para garantir que o efeito se limpe corretamente se o estado mudar.
 
 
     /**
      * **IMPORTANTE: CHAMADA SEGURA À API**
-     * Esta função simula uma chamada a um endpoint de backend.
-     * A lógica de chamar a API do Gemini com a chave deve estar no seu servidor, não aqui.
-     * @param {string} prompt - O prompt a ser enviado para a IA.
-     * @returns {Promise<string>} O texto gerado pela IA.
+     * (A lógica desta função permanece a mesma, pois já era a ideal)
      */
     const fetchGeneratedTextFromBackend = async (prompt) => {
-        // No seu projeto real, a URL seria algo como '/api/generate-document'
-        // Este endpoint no seu backend receberia o prompt e faria a chamada segura para a API do Gemini.
-        
-        // --- INÍCIO DO CÓDIGO QUE DEVE ESTAR NO SEU BACKEND ---
-        // const GEMINI_API_KEY = process.env.GEMINI_API_KEY; // Chave lida das variáveis de ambiente no servidor
-        // const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-        // const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-        // const response = await fetch(apiUrl, {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(payload)
-        // });
-        // --- FIM DO CÓDIGO QUE DEVE ESTAR NO SEU BACKEND ---
-
-        // Para este exemplo, vamos simular a chamada que você já tinha, mas com um aviso.
         if (!window.GEMINI_API_KEY) {
              throw new Error("Chave da API do Gemini não encontrada. Configure-a no seu backend.");
         }
@@ -1152,7 +1156,6 @@ Pede deferimento.
         setError('');
 
         try {
-            // 1. Montar o prompt
             const prompt = `
 Aja como um advogado especialista. Adapte o seguinte modelo de petição de embargos de declaração com base nos dados do caso fornecido.
 O objetivo é se opor à extinção do processo por desistência, argumentando a má-fé da parte autora e pedindo a análise do mérito com base na contestação já apresentada.
@@ -1175,11 +1178,8 @@ ${modeloPeticao}
 
 Responda APENAS com o texto final da petição adaptada, sem introduções, observações ou cabeçalhos adicionais.
 `;
-
-            // 2. Obter o texto da IA (agora através da função segura)
             const aiResponseText = await fetchGeneratedTextFromBackend(prompt);
 
-            // 3. Usar as bibliotecas (que já sabemos que estão carregadas)
             const { Paragraph, Document, Packer, AlignmentType } = window.docx;
 
             const paragraphs = aiResponseText.split('\n').map(line =>
@@ -1188,8 +1188,8 @@ Responda APENAS com o texto final da petição adaptada, sem introduções, obse
                     alignment: line.trim().startsWith("Processo nº") || line.trim().startsWith(selectedCase.client.toUpperCase())
                         ? AlignmentType.LEFT
                         : AlignmentType.JUSTIFIED,
-                    spacing: { after: 240 }, // Aumentei um pouco o espaçamento para melhor leitura
-                    indent: { firstLine: line.trim() ? 720 : 0 } // 720 é aprox. 1.25cm
+                    spacing: { after: 240 },
+                    indent: { firstLine: line.trim() ? 720 : 0 }
                 })
             );
 
@@ -1204,7 +1204,6 @@ Responda APENAS com o texto final da petição adaptada, sem introduções, obse
                 },
             });
 
-            // 4. Gerar o blob e salvar o arquivo
             const blob = await Packer.toBlob(doc);
             window.saveAs(blob, `Embargos_AI_${selectedCase.caseNumber}.docx`);
 
@@ -1227,10 +1226,9 @@ Responda APENAS com o texto final da petição adaptada, sem introduções, obse
             <div className="bg-white p-6 rounded-lg shadow-md mt-4">
                 <button
                     onClick={generateDocxWithAI}
-                    disabled={!selectedCaseId || isGenerating || !libsReady} // Botão desabilitado se não houver caso, estiver gerando ou se as libs não estiverem prontas
+                    disabled={!selectedCaseId || isGenerating || !libsReady}
                     className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
-                    {/* O ícone do SparkleIcon deve ser importado ou definido em outro lugar */}
                     {/* <SparkleIcon /> */}
                     <span>
                         {isGenerating ? 'Gerando com IA...' : !libsReady ? 'Carregando bibliotecas...' : 'Gerar Embargos (.DOCX)'}
